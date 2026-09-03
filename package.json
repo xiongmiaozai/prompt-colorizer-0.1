@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-prompt-colorizer",
+  "version": "2.7.0",
+  "description": "根据 Markdown 文件类型和内容模式自动着色，优化 AI 提示词的编写与展示体验。",
+  "author": "芝世",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "version": "node version-bump.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.21.0",
+    "obsidian": "^1.5.0",
+    "typescript": "^5.4.0"
+  }
+}

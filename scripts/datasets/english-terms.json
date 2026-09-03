@@ -1,0 +1,3777 @@
+{
+  "generatedAt": "2026-07-24T12:50:23.168Z",
+  "corpusSize": 25913,
+  "totalTerms": 821,
+  "classifiedCount": 649,
+  "unclassifiedCount": 172,
+  "classificationRate": 79,
+  "groups": {
+    "english_prompt_eng_phrase": [
+      {
+        "term": "prompt",
+        "freq": 8,
+        "length": 6
+      },
+      {
+        "term": "ratio",
+        "freq": 6,
+        "length": 5
+      },
+      {
+        "term": "interpolation",
+        "freq": 3,
+        "length": 13
+      },
+      {
+        "term": "inversion",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "spherical",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "keyword",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "textual",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "tile",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "edge",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "perpendicular",
+        "freq": 2,
+        "length": 13
+      },
+      {
+        "term": "thresholding",
+        "freq": 2,
+        "length": 12
+      },
+      {
+        "term": "diffusion",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "reference",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "instruct",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "refiner",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "upscale",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "merging",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "latent",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "token",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "lora",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "orthogonalization",
+        "freq": 1,
+        "length": 17
+      },
+      {
+        "term": "multidiffusion",
+        "freq": 1,
+        "length": 14
+      },
+      {
+        "term": "hypernetwork",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "segmentation",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "alternating",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "instruction",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "safetensors",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "checkpoint",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "controlnet",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "ip-adapter",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "dreambooth",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "thresholds",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "mimicscale",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "orthogonal",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "weighting",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "embedding",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "sampling",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "wildcard",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "variable",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "openpose",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "softedge",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "scribble",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "strength",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "override",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "settings",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "regional",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "prompter",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "schedule",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "openvino",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "tensorrt",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "directml",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "lineart",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "adapter",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "sampler",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "enabled",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "editing",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "dylora",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "switch",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "tiling",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "couple",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "pruned",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "coreml",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "break",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "canny",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "adain",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "locon",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "steps",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "slerp",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "multi",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "step",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "lyco",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "mlsd",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "lokr",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "loha",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "clip",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "skip",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "ensd",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "lerp",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "perp",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "ckpt",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "onnx",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "rocm",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "vae",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "cfg",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "eta",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "fix",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "pth",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "bin",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "mps",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "pt",
+        "freq": 1,
+        "length": 2
+      }
+    ],
+    "english_light_phrase": [
+      {
+        "term": "perspective",
+        "freq": 14,
+        "length": 11
+      },
+      {
+        "term": "cinematic",
+        "freq": 10,
+        "length": 9
+      },
+      {
+        "term": "golden",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "volumetric",
+        "freq": 3,
+        "length": 10
+      },
+      {
+        "term": "backlit",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "soft",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "hour",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "top",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "term": "day",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "term": "atmospheric",
+        "freq": 2,
+        "length": 11
+      },
+      {
+        "term": "natural",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "fill",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "blue",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "rim",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "fog",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "key",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "iridescence",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "artificial",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "practical",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "particles",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "overhead",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "dramatic",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "sunset",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "bottom",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "smoke",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "rays",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "hard",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "mist",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "god",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_quality_phrase": [
+      {
+        "term": "focus",
+        "freq": 20,
+        "length": 5
+      },
+      {
+        "term": "lens",
+        "freq": 19,
+        "length": 4
+      },
+      {
+        "term": "blur",
+        "freq": 19,
+        "length": 4
+      },
+      {
+        "term": "art",
+        "freq": 14,
+        "length": 3
+      },
+      {
+        "term": "depth",
+        "freq": 13,
+        "length": 5
+      },
+      {
+        "term": "flare",
+        "freq": 13,
+        "length": 5
+      },
+      {
+        "term": "artstation",
+        "freq": 10,
+        "length": 10
+      },
+      {
+        "term": "hdr",
+        "freq": 10,
+        "length": 3
+      },
+      {
+        "term": "dynamic",
+        "freq": 9,
+        "length": 7
+      },
+      {
+        "term": "field",
+        "freq": 9,
+        "length": 5
+      },
+      {
+        "term": "range",
+        "freq": 9,
+        "length": 5
+      },
+      {
+        "term": "high",
+        "freq": 9,
+        "length": 4
+      },
+      {
+        "term": "professional",
+        "freq": 7,
+        "length": 12
+      },
+      {
+        "term": "detailed",
+        "freq": 6,
+        "length": 8
+      },
+      {
+        "term": "engine",
+        "freq": 6,
+        "length": 6
+      },
+      {
+        "term": "ultra",
+        "freq": 6,
+        "length": 5
+      },
+      {
+        "term": "sharp",
+        "freq": 6,
+        "length": 5
+      },
+      {
+        "term": "resolution",
+        "freq": 5,
+        "length": 10
+      },
+      {
+        "term": "aberration",
+        "freq": 5,
+        "length": 10
+      },
+      {
+        "term": "motion",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "linear",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "masterpiece",
+        "freq": 4,
+        "length": 11
+      },
+      {
+        "term": "chromatic",
+        "freq": 4,
+        "length": 9
+      },
+      {
+        "term": "trending",
+        "freq": 4,
+        "length": 8
+      },
+      {
+        "term": "octane",
+        "freq": 4,
+        "length": 6
+      },
+      {
+        "term": "unreal",
+        "freq": 4,
+        "length": 6
+      },
+      {
+        "term": "cinema",
+        "freq": 4,
+        "length": 6
+      },
+      {
+        "term": "best",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "pbr",
+        "freq": 4,
+        "length": 3
+      },
+      {
+        "term": "ultra-realistic",
+        "freq": 3,
+        "length": 15
+      },
+      {
+        "term": "hyperdetailed",
+        "freq": 3,
+        "length": 13
+      },
+      {
+        "term": "scattering",
+        "freq": 3,
+        "length": 10
+      },
+      {
+        "term": "intricate",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "materials",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "substance",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "details",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "highres",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "blender",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "houdini",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "noise",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "hyper-realistic",
+        "freq": 2,
+        "length": 15
+      },
+      {
+        "term": "illumination",
+        "freq": 2,
+        "length": 12
+      },
+      {
+        "term": "subsurface",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "physically",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "absurdres",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "rendering",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "dithering",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "metallic",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "specular",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "ambient",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "concept",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "tracing",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "painter",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "highly",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "absurd",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "global",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "zbrush",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "based",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "unity",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "bloom",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "tone",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "srgb",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "ray",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "anti-aliasing",
+        "freq": 1,
+        "length": 13
+      },
+      {
+        "term": "displacement",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "transmission",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "reflection",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "refraction",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "absorption",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "occlusion",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "roughness",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "workflow",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "caustics",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "mapping",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "diffuse",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "fresnel",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "albedo",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "hdri",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "bump",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "msaa",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "fxaa",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "dlss",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "taa",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "fsr",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_negative_phrase": [
+      {
+        "term": "color",
+        "freq": 44,
+        "length": 5
+      },
+      {
+        "term": "quality",
+        "freq": 35,
+        "length": 7
+      },
+      {
+        "term": "render",
+        "freq": 16,
+        "length": 6
+      },
+      {
+        "term": "bokeh",
+        "freq": 14,
+        "length": 5
+      },
+      {
+        "term": "lighting",
+        "freq": 13,
+        "length": 8
+      },
+      {
+        "term": "film",
+        "freq": 13,
+        "length": 4
+      },
+      {
+        "term": "map",
+        "freq": 11,
+        "length": 3
+      },
+      {
+        "term": "low",
+        "freq": 10,
+        "length": 3
+      },
+      {
+        "term": "face",
+        "freq": 9,
+        "length": 4
+      },
+      {
+        "term": "bad",
+        "freq": 7,
+        "length": 3
+      },
+      {
+        "term": "fingers",
+        "freq": 6,
+        "length": 7
+      },
+      {
+        "term": "photorealistic",
+        "freq": 5,
+        "length": 14
+      },
+      {
+        "term": "painting",
+        "freq": 5,
+        "length": 8
+      },
+      {
+        "term": "normal",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "studio",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "extra",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "limbs",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "grain",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "long",
+        "freq": 5,
+        "length": 4
+      },
+      {
+        "term": "anatomy",
+        "freq": 4,
+        "length": 7
+      },
+      {
+        "term": "mutated",
+        "freq": 4,
+        "length": 7
+      },
+      {
+        "term": "blurry",
+        "freq": 4,
+        "length": 6
+      },
+      {
+        "term": "limb",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "signature",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "watermark",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "floating",
+        "freq": 3,
+        "length": 8
+      },
+      {
+        "term": "missing",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "hands",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "text",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "disconnected",
+        "freq": 2,
+        "length": 12
+      },
+      {
+        "term": "illustration",
+        "freq": 2,
+        "length": 12
+      },
+      {
+        "term": "disfigured",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "disgusting",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "amputation",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "monochrome",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "distorted",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "artifacts",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "deformed",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "mutation",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "username",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "cropped",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "drawing",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "poorly",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "drawn",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "wrong",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "worst",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "error",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "anime",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "fused",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "ugly",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "jpeg",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "verybadimagenegative",
+        "freq": 1,
+        "length": 20
+      },
+      {
+        "term": "easynegative",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "photograph",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "malformed",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "grayscale",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "realistic",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "cartoon",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "letters",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "diagram",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "lowres",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "cloned",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "sketch",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "photo",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "words",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "chart",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "graph",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "many",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "arms",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "legs",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "neck",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "flat",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "dslr",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "logo",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "nsfw",
+        "freq": 1,
+        "length": 4
+      }
+    ],
+    "english_shot_phrase": [
+      {
+        "term": "view",
+        "freq": 58,
+        "length": 4
+      },
+      {
+        "term": "angle",
+        "freq": 16,
+        "length": 5
+      },
+      {
+        "term": "wide",
+        "freq": 12,
+        "length": 4
+      },
+      {
+        "term": "eye",
+        "freq": 12,
+        "length": 3
+      },
+      {
+        "term": "close-up",
+        "freq": 9,
+        "length": 8
+      },
+      {
+        "term": "contrast",
+        "freq": 8,
+        "length": 8
+      },
+      {
+        "term": "medium",
+        "freq": 8,
+        "length": 6
+      },
+      {
+        "term": "level",
+        "freq": 8,
+        "length": 5
+      },
+      {
+        "term": "profile",
+        "freq": 7,
+        "length": 7
+      },
+      {
+        "term": "exposure",
+        "freq": 6,
+        "length": 8
+      },
+      {
+        "term": "zoom",
+        "freq": 6,
+        "length": 4
+      },
+      {
+        "term": "macro",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "white",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "full",
+        "freq": 5,
+        "length": 4
+      },
+      {
+        "term": "split",
+        "freq": 4,
+        "length": 5
+      },
+      {
+        "term": "micro",
+        "freq": 4,
+        "length": 5
+      },
+      {
+        "term": "deep",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "tracking",
+        "freq": 3,
+        "length": 8
+      },
+      {
+        "term": "shoulder",
+        "freq": 3,
+        "length": 8
+      },
+      {
+        "term": "aperture",
+        "freq": 3,
+        "length": 8
+      },
+      {
+        "term": "shallow",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "panning",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "extreme",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "cowboy",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "aerial",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "bird's",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "worm's",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "dolly",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "front",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "three-quarter",
+        "freq": 2,
+        "length": 13
+      },
+      {
+        "term": "hyperfocal",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "highlights",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "steadicam",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "bottom-up",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "confusion",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "handheld",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "top-down",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "distance",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "triangle",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "shadows",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "tilting",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "balance",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "circle",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "drone",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "dutch",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "crane",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "point",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "side",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "back",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "rack",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "pull",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "iso",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "establishing",
+        "freq": 1,
+        "length": 12
+      },
+      {
+        "term": "temperature",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "helicopter",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "underwater",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "saturation",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "brightness",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "satellite",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "luminance",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "histogram",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "american",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "midtones",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "italian",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "rolling",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "monopod",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "diopter",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "shutter",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "person",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "canted",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "tripod",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "gimbal",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "length",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "f-stop",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "kelvin",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "offset",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "blacks",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "whites",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "curves",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "levels",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "first",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "focal",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "speed",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "gamma",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "tint",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "gain",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "pov",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "jib",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "rig",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "hue",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_photo_phrase": [
+      {
+        "term": "light",
+        "freq": 11,
+        "length": 5
+      },
+      {
+        "term": "raw",
+        "freq": 8,
+        "length": 3
+      },
+      {
+        "term": "anamorphic",
+        "freq": 7,
+        "length": 10
+      },
+      {
+        "term": "lenses",
+        "freq": 6,
+        "length": 6
+      },
+      {
+        "term": "beauty",
+        "freq": 5,
+        "length": 6
+      },
+      {
+        "term": "prime",
+        "freq": 5,
+        "length": 5
+      },
+      {
+        "term": "sony",
+        "freq": 5,
+        "length": 4
+      },
+      {
+        "term": "tilt-shift",
+        "freq": 4,
+        "length": 10
+      },
+      {
+        "term": "panavision",
+        "freq": 4,
+        "length": 10
+      },
+      {
+        "term": "telephoto",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "fisheye",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "redcode",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "master",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "cinealta",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "softbox",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "arriraw",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "sensor",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "weapon",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "dragon",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "series",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "alexa",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "zeiss",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "primo",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "dish",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "arri",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "mini",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "red",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "canon",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "grid",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "eos",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_material_phrase": [
+      {
+        "term": "glowing",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "smooth",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "foam",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "term": "sandstone",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "platinum",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "leather",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "granite",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "diamond",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "velvet",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "marble",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "silver",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "rubber",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "vellum",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "bubble",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "bamboo",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "denim",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "scale",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "skin",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "gold",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "fur",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "translucent",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "holographic",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "crystalline",
+        "freq": 1,
+        "length": 11
+      },
+      {
+        "term": "iridescent",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "terracotta",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "sandalwood",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "porcelain",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "cardboard",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "parchment",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "polyester",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "turquoise",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "leathery",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "concrete",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "titanium",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "aluminum",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "silicone",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "cashmere",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "corduroy",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "pleather",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "neoprene",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "mahogany",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "rosewood",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "amethyst",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "sapphire",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "feather",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "mercury",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "plastic",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "ceramic",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "chiffon",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "taffeta",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "organza",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "flannel",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "spandex",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "acrylic",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "viscose",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "crystal",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "emerald",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "glossy",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "porous",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "glassy",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "wooden",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "fabric",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "cotton",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "copper",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "bronze",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "chrome",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "nickel",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "sponge",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "mohair",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "angora",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "canvas",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "fleece",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "rattan",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "wicker",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "walnut",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "cherry",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "antler",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "quartz",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "rough",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "bumpy",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "linen",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "stone",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "brick",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "steel",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "brass",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "paper",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "satin",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "tulle",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "tweed",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "suede",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "latex",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "lycra",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "nylon",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "rayon",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "sisal",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "cedar",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "maple",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "birch",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "beech",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "ebony",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "ivory",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "shell",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "coral",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "pearl",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "lapis",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "topaz",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "silk",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "wool",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "bark",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "iron",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "zinc",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "lead",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "clay",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "soap",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "lace",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "felt",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "hemp",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "jute",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "pine",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "teak",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "bone",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "horn",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "jade",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "ruby",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "opal",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "wax",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "pvc",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "oak",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "ash",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "elm",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_artist_phrase": [
+      {
+        "term": "artgerm",
+        "freq": 5,
+        "length": 7
+      },
+      {
+        "term": "greg",
+        "freq": 5,
+        "length": 4
+      },
+      {
+        "term": "rossdraws",
+        "freq": 4,
+        "length": 9
+      },
+      {
+        "term": "kuvshinov",
+        "freq": 4,
+        "length": 9
+      },
+      {
+        "term": "wlop",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "jean",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "leyendecker",
+        "freq": 3,
+        "length": 11
+      },
+      {
+        "term": "rutkowski",
+        "freq": 3,
+        "length": 9
+      },
+      {
+        "term": "mullins",
+        "freq": 3,
+        "length": 7
+      },
+      {
+        "term": "mucha",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "craig",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "riabovitchev",
+        "freq": 2,
+        "length": 12
+      },
+      {
+        "term": "mohrbacher",
+        "freq": 2,
+        "length": 10
+      },
+      {
+        "term": "rembrandt",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "simonetti",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "christian",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "guangjian",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "alphonse",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "giancola",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "manchess",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "masamune",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "kinkade",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "shinkai",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "stanley",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "struzan",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "elvgren",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "thomas",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "makoto",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "andrei",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "sakimi",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "donato",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "kilian",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "parker",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "shirow",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "kopera",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "joseph",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "sachin",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "james",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "alena",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "peter",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "huang",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "marc",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "chan",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "jake",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "mead",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "luis",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "royo",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "drew",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "ilya",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "ruan",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "teng",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "term": "lau",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "eng",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "syd",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "jia",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "gil",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "term": "davinci",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "ross",
+        "freq": 1,
+        "length": 4
+      }
+    ],
+    "english_style_phrase": [
+      {
+        "term": "fantasy",
+        "freq": 4,
+        "length": 7
+      },
+      {
+        "term": "dark",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "term": "ghibli",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "disney",
+        "freq": 3,
+        "length": 6
+      },
+      {
+        "term": "pixar",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "matte",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "term": "cyberpunk",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "isometric",
+        "freq": 2,
+        "length": 9
+      },
+      {
+        "term": "digital",
+        "freq": 2,
+        "length": 7
+      },
+      {
+        "term": "sci-fi",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "design",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "retro",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "impressionism",
+        "freq": 1,
+        "length": 13
+      },
+      {
+        "term": "watercolor",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "surrealism",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "minimalism",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "dieselpunk",
+        "freq": 1,
+        "length": 10
+      },
+      {
+        "term": "character",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "steampunk",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "vaporwave",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "synthwave",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "shading",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "ukiyo-e",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "baroque",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "biopunk",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "nouveau",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "bauhaus",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "webtoon",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "surreal",
+        "freq": 1,
+        "length": 7
+      },
+      {
+        "term": "sumi-e",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "gothic",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "manhwa",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "pixel",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "ascii",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "comic",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "manga",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "voxel",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "lofi",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "deco",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "book",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "poly",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "cel",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "oil",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "ink",
+        "freq": 1,
+        "length": 3
+      },
+      {
+        "term": "pop",
+        "freq": 1,
+        "length": 3
+      }
+    ],
+    "english_render_phrase": [
+      {
+        "term": "designer",
+        "freq": 2,
+        "length": 8
+      },
+      {
+        "term": "cycles",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "term": "metal",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "eevee",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "term": "denoising",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "cryengine",
+        "freq": 1,
+        "length": 9
+      },
+      {
+        "term": "redshift",
+        "freq": 1,
+        "length": 8
+      },
+      {
+        "term": "arnold",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "source",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "mudbox",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "katana",
+        "freq": 1,
+        "length": 6
+      },
+      {
+        "term": "v-ray",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "godot",
+        "freq": 1,
+        "length": 5
+      },
+      {
+        "term": "cuda",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "maya",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "mari",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "nuke",
+        "freq": 1,
+        "length": 4
+      },
+      {
+        "term": "max",
+        "freq": 1,
+        "length": 3
+      }
+    ]
+  },
+  "unclassified": [
+    {
+      "term": "shot",
+      "freq": 34,
+      "length": 4
+    },
+    {
+      "term": "colors",
+      "freq": 26,
+      "length": 6
+    },
+    {
+      "term": "look",
+      "freq": 23,
+      "length": 4
+    },
+    {
+      "term": "composition",
+      "freq": 17,
+      "length": 11
+    },
+    {
+      "term": "style",
+      "freq": 17,
+      "length": 5
+    },
+    {
+      "term": "portrait",
+      "freq": 12,
+      "length": 8
+    },
+    {
+      "term": "bit",
+      "freq": 12,
+      "length": 3
+    },
+    {
+      "term": "magnification",
+      "freq": 11,
+      "length": 13
+    },
+    {
+      "term": "solver",
+      "freq": 11,
+      "length": 6
+    },
+    {
+      "term": "depth of field",
+      "freq": 9,
+      "length": 14
+    },
+    {
+      "term": "lines",
+      "freq": 9,
+      "length": 5
+    },
+    {
+      "term": "grading",
+      "freq": 8,
+      "length": 7
+    },
+    {
+      "term": "camera",
+      "freq": 8,
+      "length": 6
+    },
+    {
+      "term": "chaos",
+      "freq": 8,
+      "length": 5
+    },
+    {
+      "term": "fashion",
+      "freq": 7,
+      "length": 7
+    },
+    {
+      "term": "photography",
+      "freq": 6,
+      "length": 11
+    },
+    {
+      "term": "stylize",
+      "freq": 6,
+      "length": 7
+    },
+    {
+      "term": "paired",
+      "freq": 6,
+      "length": 6
+    },
+    {
+      "term": "prores",
+      "freq": 6,
+      "length": 6
+    },
+    {
+      "term": "gamut",
+      "freq": 6,
+      "length": 5
+    },
+    {
+      "term": "midjourney",
+      "freq": 5,
+      "length": 10
+    },
+    {
+      "term": "atmosphere",
+      "freq": 5,
+      "length": 10
+    },
+    {
+      "term": "landscape",
+      "freq": 5,
+      "length": 9
+    },
+    {
+      "term": "format",
+      "freq": 5,
+      "length": 6
+    },
+    {
+      "term": "winner",
+      "freq": 5,
+      "length": 6
+    },
+    {
+      "term": "weird",
+      "freq": 5,
+      "length": 5
+    },
+    {
+      "term": "large",
+      "freq": 5,
+      "length": 5
+    },
+    {
+      "term": "wyeth",
+      "freq": 5,
+      "length": 5
+    },
+    {
+      "term": "black and white",
+      "freq": 4,
+      "length": 15
+    },
+    {
+      "term": "site of the",
+      "freq": 4,
+      "length": 11
+    },
+    {
+      "term": "ethereal",
+      "freq": 4,
+      "length": 8
+    },
+    {
+      "term": "effects",
+      "freq": 4,
+      "length": 7
+    },
+    {
+      "term": "behance",
+      "freq": 4,
+      "length": 7
+    },
+    {
+      "term": "thirds",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "term": "effect",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "term": "awards",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "term": "kodak",
+      "freq": 4,
+      "length": 5
+    },
+    {
+      "term": "black",
+      "freq": 4,
+      "length": 5
+    },
+    {
+      "term": "webby",
+      "freq": 4,
+      "length": 5
+    },
+    {
+      "term": "half",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "term": "warm",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "term": "niji",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "term": "site",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "term": "pix",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "term": "uhd",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "term": "trending on artstation",
+      "freq": 3,
+      "length": 22
+    },
+    {
+      "term": "rule of thirds",
+      "freq": 3,
+      "length": 14
+    },
+    {
+      "term": "complementary",
+      "freq": 3,
+      "length": 13
+    },
+    {
+      "term": "background",
+      "freq": 3,
+      "length": 10
+    },
+    {
+      "term": "silhouette",
+      "freq": 3,
+      "length": 10
+    },
+    {
+      "term": "horizontal",
+      "freq": 3,
+      "length": 10
+    },
+    {
+      "term": "definition",
+      "freq": 3,
+      "length": 10
+    },
+    {
+      "term": "panoramic",
+      "freq": 3,
+      "length": 9
+    },
+    {
+      "term": "modifiers",
+      "freq": 3,
+      "length": 9
+    },
+    {
+      "term": "particle",
+      "freq": 3,
+      "length": 8
+    },
+    {
+      "term": "fringing",
+      "freq": 3,
+      "length": 8
+    },
+    {
+      "term": "gripping",
+      "freq": 3,
+      "length": 8
+    },
+    {
+      "term": "awwwards",
+      "freq": 3,
+      "length": 8
+    },
+    {
+      "term": "dreamy",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "forest",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "repeat",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "streak",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "radial",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "vision",
+      "freq": 3,
+      "length": 6
+    },
+    {
+      "term": "still",
+      "freq": 3,
+      "length": 5
+    },
+    {
+      "term": "dolby",
+      "freq": 3,
+      "length": 5
+    },
+    {
+      "term": "frank",
+      "freq": 3,
+      "length": 5
+    },
+    {
+      "term": "c-log",
+      "freq": 3,
+      "length": 5
+    },
+    {
+      "term": "body",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "rule",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "neon",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "noir",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "cool",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "teal",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "fast",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "john",
+      "freq": 3,
+      "length": 4
+    },
+    {
+      "term": "rgb",
+      "freq": 3,
+      "length": 3
+    },
+    {
+      "term": "fwa",
+      "freq": 3,
+      "length": 3
+    },
+    {
+      "term": "circle of confusion",
+      "freq": 2,
+      "length": 19
+    },
+    {
+      "term": "hands and fingers",
+      "freq": 2,
+      "length": 17
+    },
+    {
+      "term": "reproduction",
+      "freq": 2,
+      "length": 12
+    },
+    {
+      "term": "shot on arri",
+      "freq": 2,
+      "length": 12
+    },
+    {
+      "term": "shot on sony",
+      "freq": 2,
+      "length": 12
+    },
+    {
+      "term": "three-point",
+      "freq": 2,
+      "length": 11
+    },
+    {
+      "term": "shot on red",
+      "freq": 2,
+      "length": 11
+    },
+    {
+      "term": "catchlight",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "amber-teal",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "separation",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "ultra-wide",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "parameters",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "lomography",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "distortion",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "commercial",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "foreground",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "projection",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "descending",
+      "freq": 2,
+      "length": 10
+    },
+    {
+      "term": "hollywood",
+      "freq": 2,
+      "length": 9
+    },
+    {
+      "term": "editorial",
+      "freq": 2,
+      "length": 9
+    },
+    {
+      "term": "ascending",
+      "freq": 2,
+      "length": 9
+    },
+    {
+      "term": "clutching",
+      "freq": 2,
+      "length": 9
+    }
+  ]
+}

@@ -1,0 +1,2805 @@
+/* ============================================================
+ * Prompt Colorizer — 提示词着色插件样式
+ * Mac 极简风格 · 全体系闭环落地版 v3
+ *
+ * 设计体系（基于 UI界面可视化终极重构方案）：
+ * - 色彩体系：颜色完全由 Git 托管的 YAML 规则驱动（colors + styleRules）
+ *   · --dsl-* 变量由 YAML colors 区块自动生成
+ *   · --pc-* 变量作为 --dsl-* 的别名，保持 UI 样式兼容性
+ *   · 编辑器/阅读模式着色由 generateStyleCss() 动态生成
+ * - 交互体系：可感知 / 可反馈 / 可预期 / 可容错 四原则闭环
+ * - 布局体系：4px 基线网格 + 充足留白 + 标准化列表
+ * - 信息架构：主次分层 + 流程顺势 + 极简降噪
+ * - 跨平台：明暗模式完整覆盖 + 响应式断点
+ * ============================================================ */
+
+/* ============================================================
+ * 一、设计令牌系统（Design Tokens）
+ * ============================================================ */
+
+:root {
+  /* ---- 间距体系（4px 基线倍率，全局统一）---- */
+  --pc-space-xs:  2px;
+  --pc-space-sm:  4px;
+  --pc-space-md:  8px;
+  --pc-space-lg:  12px;
+  --pc-space-xl:  16px;
+  --pc-space-2xl: 20px;
+  --pc-space-3xl: 24px;
+  --pc-space-4xl: 32px;
+  --pc-space-5xl: 40px;
+
+  /* ---- 圆角体系 ---- */
+  --pc-radius-sm: 4px;
+  --pc-radius-md: 8px;
+  --pc-radius-lg: 12px;
+  --pc-radius-xl: 16px;
+  --pc-radius-full: 9999px;
+
+  /* ---- 过渡曲线（统一节奏）---- */
+  --pc-transition-fast: 100ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --pc-transition:      150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --pc-transition-slow: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* ---- 阴影体系（Mac 极简：极其微妙的多层阴影）---- */
+  --pc-shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.03);
+  --pc-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --pc-shadow-md:  0 3px 10px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --pc-shadow-lg:  0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
+  --pc-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.12);
+
+  /* ---- 字重体系 ---- */
+  --pc-weight-regular: 400;
+  --pc-weight-medium:  500;
+  --pc-weight-semibold: 600;
+  --pc-weight-bold:    700;
+  --pc-weight-bold-cn: 800;
+
+  /* ---- 字体回退链（中文优先 + 等宽优先）---- */
+  --pc-font-cn:   -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --pc-font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace;
+
+  /* ---- DSL 着色变量别名 — 引用由 YAML colors 区块动态生成的 --dsl-* 变量 ---- */
+  /* 颜色值完全由 Git 托管的 YAML 规则控制，插件零硬编码 */
+  /* 红危 — 排除/禁止/系统角色 */
+  --pc-danger:        var(--dsl-danger, #ef4444);
+  --pc-danger-soft:   var(--dsl-danger-soft, rgba(239, 68, 68, 0.06));
+  --pc-danger-border: var(--dsl-danger-border, rgba(239, 68, 68, 0.15));
+  /* 绿成 — 台词/用户角色/成功 */
+  --pc-success:        var(--dsl-success, #10b981);
+  --pc-success-soft:   var(--dsl-success-soft, rgba(16, 185, 129, 0.06));
+  --pc-success-border: var(--dsl-success-border, rgba(16, 185, 129, 0.15));
+  /* 黄警 — 技术参数/变量/警告 */
+  --pc-warning:        var(--dsl-warning, #d97706);
+  --pc-warning-soft:   var(--dsl-warning-soft, rgba(217, 119, 6, 0.06));
+  --pc-warning-border: var(--dsl-warning-border, rgba(217, 119, 6, 0.15));
+  /* 蓝信 — 字段标签/信息/主操作 */
+  --pc-info:        var(--dsl-info, #3b82f6);
+  --pc-info-soft:   var(--dsl-info-soft, rgba(59, 130, 246, 0.06));
+  --pc-info-border: var(--dsl-info-border, rgba(59, 130, 246, 0.15))
+
+  /* ---- 3 个辅助色 — 引用 --dsl-* 变量 ---- */
+  /* 紫色 — 区段标记/模板 */
+  --pc-purple:        var(--dsl-purple, #8b5cf6);
+  --pc-purple-soft:   var(--dsl-purple-soft, rgba(139, 92, 246, 0.06));
+  --pc-purple-border: var(--dsl-purple-border, rgba(139, 92, 246, 0.15));
+  /* 青色 — 分镜标题 */
+  --pc-cyan:        var(--dsl-cyan, #0891b2);
+  --pc-cyan-soft:   var(--dsl-cyan-soft, rgba(8, 145, 178, 0.05));
+  --pc-cyan-border: var(--dsl-cyan-border, rgba(8, 145, 178, 0.15));
+  /* 粉色 — 音频引用 */
+  --pc-pink:        var(--dsl-pink, #db2777);
+  --pc-pink-soft:   var(--dsl-pink-soft, rgba(219, 39, 119, 0.06));
+  --pc-pink-border: var(--dsl-pink-border, rgba(219, 39, 119, 0.15))
+
+  /* ---- 橙色 — 引用 --dsl-orange ---- */
+  --pc-orange:        var(--dsl-orange, #ea580c);
+  --pc-orange-soft:   var(--dsl-orange-soft, rgba(234, 88, 12, 0.06));
+  --pc-orange-border: var(--dsl-orange-border, rgba(234, 88, 12, 0.15))
+
+  /* ---- 资源/暖色 — 引用 --dsl-amber ---- */
+  --pc-amber:        var(--dsl-amber, #b45309);
+  --pc-amber-soft:   var(--dsl-amber-soft, rgba(180, 83, 9, 0.05));
+  --pc-amber-border: var(--dsl-amber-border, rgba(180, 83, 9, 0.12))
+
+  /* ---- SD/ComfyUI 扩展色 — 引用对应 --dsl-* 令牌 ---- */
+  --pc-emphasis:        var(--dsl-warning, #d97706);
+  --pc-emphasis-soft:   var(--dsl-warning-soft, rgba(217, 119, 6, 0.06));
+  --pc-lora:            var(--dsl-amber, #b45309);
+  --pc-lora-soft:       var(--dsl-amber-soft, rgba(180, 83, 9, 0.05));
+  --pc-quality:         var(--dsl-success, #10b981);
+  --pc-quality-soft:    var(--dsl-success-soft, rgba(16, 185, 129, 0.06));
+  --pc-bracket-strong:  var(--dsl-info, #3b82f6);
+  --pc-bracket-strong-soft: var(--dsl-info-soft, rgba(59, 130, 246, 0.06));
+  --pc-bracket-weak:    var(--dsl-paren, #94a3b8);
+  --pc-bracket-weak-soft: var(--dsl-paren-soft, rgba(148, 163, 184, 0.04));
+  --pc-camera-move:     var(--dsl-cyan, #0891b2);
+  --pc-camera-move-soft: var(--dsl-cyan-soft, rgba(8, 145, 178, 0.05));
+  --pc-scene-transition: var(--dsl-purple, #8b5cf6);
+  --pc-transition-soft: var(--dsl-purple-soft, rgba(139, 92, 246, 0.06))
+
+  /* ---- 灰度梯度（60% 无彩基底）---- */
+  --pc-gray-100: #f8fafc;
+  --pc-gray-200: #f1f5f9;
+  --pc-gray-300: #e2e8f0;
+  --pc-gray-400: #cbd5e1;
+  --pc-gray-500: #94a3b8;
+  --pc-gray-600: #64748b;
+  --pc-gray-700: #475569;
+
+  --pc-paren:        var(--dsl-paren, #94a3b8);
+  --pc-paren-soft:   var(--dsl-paren-soft, rgba(148, 163, 184, 0.04))
+
+  /* ---- 强调色（10% 点缀）---- */
+  --pc-accent:       #3b82f6;
+  --pc-accent-glow:  rgba(59, 130, 246, 0.15);
+
+  /* ---- 指令色 — 引用 --dsl-purple ---- */
+  --pc-instruction:      var(--dsl-purple, #8b5cf6);
+  --pc-instruction-soft: var(--dsl-purple-soft, rgba(139, 92, 246, 0.06))
+
+  /* ---- 代码块色 ---- */
+  --pc-codeblock-border: #334155;
+  --pc-codeblock-soft:   rgba(30, 41, 59, 0.15);
+  --pc-json-accent:      #db2777;
+  --pc-json-soft:        rgba(219, 39, 119, 0.04);
+
+  /* ---- 毛玻璃参数 ---- */
+  --pc-blur-amount: 20px;
+  --pc-blur-saturate: 180%;
+
+  /* ---- 设置面板 ---- */
+  --pc-card-bg:        rgba(255, 255, 255, 0.65);
+  --pc-card-border:    rgba(0, 0, 0, 0.05);
+  --pc-card-radius:    var(--pc-radius-lg);
+  --pc-card-hover-bg:  rgba(255, 255, 255, 0.80);
+  --pc-card-hover-border: rgba(0, 0, 0, 0.08);
+  --pc-section-title:  var(--pc-gray-700);
+  --pc-divider:        rgba(0, 0, 0, 0.04);
+  --pc-item-hover:     rgba(0, 0, 0, 0.015);
+  --pc-toggle-on:      var(--pc-accent);
+
+  /* ---- 状态概览条 ---- */
+  --pc-status-bar-bg:  rgba(59, 130, 246, 0.03);
+  --pc-status-bar-border: rgba(59, 130, 246, 0.10);
+
+  /* ---- 预设方案按钮 ---- */
+  --pc-preset-bg:      var(--pc-gray-100);
+  --pc-preset-hover:   var(--pc-gray-200);
+  --pc-preset-active:  var(--pc-info-soft);
+  --pc-preset-active-border: var(--pc-info-border);
+}
+
+/* ============================================================
+ * 二、深色模式令牌覆盖
+ * ============================================================ */
+
+body.theme-dark {
+  /* --dsl-* 变量已由 YAML colors 区块自动生成深色模式值 */
+  /* --pc-* 是 --dsl-* 的别名，无需单独覆盖 */
+
+  --pc-shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.15);
+  --pc-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --pc-shadow-md:  0 3px 10px rgba(0, 0, 0, 0.30), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --pc-shadow-lg:  0 6px 20px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15);
+  --pc-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.18);
+
+  --pc-codeblock-soft: rgba(15, 23, 42, 0.30);
+  --pc-json-soft:      rgba(219, 39, 119, 0.06);
+
+  --pc-card-bg:     rgba(45, 45, 45, 0.55);
+  --pc-card-border: rgba(255, 255, 255, 0.06);
+  --pc-card-hover-bg: rgba(55, 55, 55, 0.65);
+  --pc-card-hover-border: rgba(255, 255, 255, 0.10);
+  --pc-section-title:  rgba(255, 255, 255, 0.50);
+  --pc-divider:     rgba(255, 255, 255, 0.05);
+  --pc-item-hover:  rgba(255, 255, 255, 0.015);
+
+  --pc-status-bar-bg:  rgba(59, 130, 246, 0.05);
+  --pc-status-bar-border: rgba(59, 130, 246, 0.12);
+
+  --pc-preset-bg:      rgba(255, 255, 255, 0.03);
+  --pc-preset-hover:   rgba(255, 255, 255, 0.06);
+  --pc-preset-active:  var(--pc-info-soft);
+  --pc-preset-active-border: var(--pc-info-border);
+}
+
+/* 强制浅色/深色模式 */
+body.prompt-colorizer-light { color-scheme: light; }
+body.prompt-colorizer-dark  { color-scheme: dark; }
+
+/* ============================================================
+ * 三、编辑器高亮样式
+ * 编辑器着色样式由动态颜色引擎自动生成（#prompt-colorizer-dsl-styles）
+ * 颜色变量由 YAML colors 区块自动生成（#prompt-colorizer-color-vars）
+ * 阅读模式 DOM 专用样式保留在第六节
+ * ============================================================ */
+
+/* ============================================================
+ * 五、文件浏览器着色 — Mac 极简圆点
+ * ============================================================ */
+
+.pc-file-dot {
+  display: inline-block;
+  border-radius: var(--pc-radius-full);
+  margin-right: var(--pc-space-md);
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: transform var(--pc-transition), box-shadow var(--pc-transition);
+  /* Mac 风格：内环高光 + 外阴影 */
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.pc-file-dot:hover {
+  transform: scale(1.25);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 0 5px var(--pc-dot-color, currentColor),
+    0 1px 3px rgba(0, 0, 0, 0.10);
+}
+
+/* 文件类型标签 — Mac 风格药丸 */
+.pc-file-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-xs);
+  font-size: 10px;
+  font-weight: var(--pc-weight-medium);
+  padding: 1px var(--pc-space-sm);
+  border-radius: var(--pc-radius-full);
+  margin-left: var(--pc-space-sm);
+  vertical-align: middle;
+  flex-shrink: 0;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  transition: all var(--pc-transition);
+}
+
+/* 标签页颜色指示器 — 底部细线 */
+.pc-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-bottom: 2px solid transparent;
+  pointer-events: none;
+  transition: opacity var(--pc-transition);
+}
+
+/* ============================================================
+ * 六、阅读模式渲染
+ * 设计原则：与编辑器保持一致，文字色为主
+ * ============================================================ */
+
+/* 区段标记 — 药丸标签（结构性锚点） */
+.pc-reader-section-marker {
+  color: var(--pc-purple);
+  font-weight: var(--pc-weight-bold);
+  background: var(--pc-purple-soft);
+  border: 1px solid var(--pc-purple-border);
+  border-radius: var(--pc-radius-md);
+  padding: 2px var(--pc-space-lg);
+  display: inline-block;
+  margin: var(--pc-space-md) 0;
+}
+
+/* 分镜标题 — 卡片块（视觉分隔） */
+.pc-reader-shot-header {
+  color: var(--pc-cyan);
+  font-weight: var(--pc-weight-bold);
+  background: var(--pc-cyan-soft);
+  border-left: 3px solid var(--pc-cyan-border);
+  padding: var(--pc-space-md) var(--pc-space-lg);
+  border-radius: 0 var(--pc-radius-md) var(--pc-radius-md) 0;
+  margin: var(--pc-space-lg) 0;
+  display: block;
+}
+
+/* 资源引用 — 纯文字色 + 字重 */
+.pc-reader-asset-ref {
+  color: var(--pc-amber);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 方括号资源引用 — 文字色 */
+.pc-reader-asset-bracket {
+  color: var(--pc-amber);
+  font-weight: var(--pc-weight-medium);
+}
+
+/* 字段标签 — 纯文字色 + 字重 */
+.pc-reader-field-label {
+  color: var(--pc-info);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 台词 — 斜体 + 文字色 */
+.pc-reader-dialogue {
+  color: var(--pc-success);
+  font-style: italic;
+  background: var(--pc-success-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 1px var(--pc-space-sm);
+}
+
+/* 音频引用 — 纯文字色 + 字重 */
+.pc-reader-audio-ref {
+  color: var(--pc-pink);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 音色 标签 */
+.pc-reader-audio-tone {
+  color: var(--pc-pink);
+  font-weight: var(--pc-weight-medium);
+  font-style: italic;
+}
+
+/* 音效： 标签 */
+.pc-reader-audio-sfx {
+  color: var(--pc-pink);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 排除规则 — 红色警示（保留背景） */
+.pc-reader-negative-prompt {
+  color: var(--pc-danger);
+  font-weight: var(--pc-weight-semibold);
+  background: var(--pc-danger-soft);
+  border: 1px solid var(--pc-danger-border);
+  border-radius: var(--pc-radius-sm);
+  padding: 1px var(--pc-space-sm);
+}
+
+/* 技术参数 — 纯文字色 + 字重 */
+.pc-reader-tech-param {
+  color: var(--pc-warning);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 括号注释 */
+.pc-reader-parenthetical {
+  color: var(--pc-paren);
+  font-style: italic;
+  opacity: 0.70;
+}
+
+/* 阅读模式 — 角色标签 */
+.pc-reader-role-tag {
+  font-weight: var(--pc-weight-bold);
+  border-radius: var(--pc-radius-sm);
+  padding: 0 var(--pc-space-sm);
+}
+.pc-reader-role-system-open,
+.pc-reader-role-system-close {
+  color: var(--pc-danger);
+  background: var(--pc-danger-soft);
+}
+.pc-reader-role-user-open,
+.pc-reader-role-user-close {
+  color: var(--pc-info);
+  background: var(--pc-info-soft);
+}
+.pc-reader-role-assistant-open,
+.pc-reader-role-assistant-close {
+  color: var(--pc-success);
+  background: var(--pc-success-soft);
+}
+.pc-reader-role-tool-open,
+.pc-reader-role-tool-close {
+  color: var(--pc-orange);
+  background: var(--pc-orange-soft);
+}
+
+/* 阅读模式 — 角色标题 */
+.pc-reader-role-system {
+  color: var(--pc-danger);
+  border-left: 3px solid var(--pc-danger);
+  padding-left: var(--pc-space-lg);
+}
+.pc-reader-role-user {
+  color: var(--pc-info);
+  border-left: 3px solid var(--pc-info);
+  padding-left: var(--pc-space-lg);
+}
+.pc-reader-role-assistant {
+  color: var(--pc-success);
+  border-left: 3px solid var(--pc-success);
+  padding-left: var(--pc-space-lg);
+}
+.pc-reader-role-tool {
+  color: var(--pc-orange);
+  border-left: 3px solid var(--pc-orange);
+  padding-left: var(--pc-space-lg);
+}
+
+/* 阅读模式 — 变量 */
+.pc-reader-variable {
+  color: var(--pc-warning);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* 阅读模式 — 行内代码 */
+.pc-reader-inline-code {
+  color: var(--text-accent);
+  background: var(--background-modifier-form-field);
+  border-radius: var(--pc-radius-sm);
+  padding: 0 var(--pc-space-sm);
+  font-family: var(--font-monospace);
+}
+
+/* 阅读模式 — 注释 */
+.pc-reader-comment {
+  color: var(--pc-gray-500);
+  font-style: italic;
+  opacity: 0.55;
+}
+
+/* 阅读模式 — 代码块 */
+.pc-reader-codeblock {
+  background: var(--pc-codeblock-soft);
+  border-left: 3px solid var(--pc-codeblock-border);
+  border-radius: 0 var(--pc-radius-md) var(--pc-radius-md) 0;
+}
+.pc-reader-codeblock-json {
+  background: var(--pc-json-soft);
+  border-left: 3px solid var(--pc-json-accent);
+  border-radius: 0 var(--pc-radius-md) var(--pc-radius-md) 0;
+}
+
+/* 阅读模式 — 指令标记 */
+.pc-reader-instruction-open,
+.pc-reader-instruction-close {
+  color: var(--pc-instruction);
+  font-weight: var(--pc-weight-bold);
+}
+
+/* 阅读模式 — SD/ComfyUI 扩展 */
+.pc-reader-emphasis-weight {
+  color: var(--pc-emphasis);
+  font-weight: var(--pc-weight-semibold);
+  background: var(--pc-emphasis-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 0 var(--pc-space-xs);
+}
+
+.pc-reader-lora-ref {
+  color: var(--pc-lora);
+  font-weight: var(--pc-weight-bold);
+  background: var(--pc-lora-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 0 var(--pc-space-xs);
+}
+
+.pc-reader-bracket-emphasis-strong {
+  color: var(--pc-bracket-strong);
+  font-weight: var(--pc-weight-bold);
+}
+
+.pc-reader-bracket-emphasis-weak {
+  color: var(--pc-bracket-weak);
+  opacity: 0.75;
+}
+
+.pc-reader-quality-tag {
+  color: var(--pc-quality);
+  font-weight: var(--pc-weight-semibold);
+}
+
+.pc-reader-sd-negative-header {
+  color: var(--pc-danger);
+  font-weight: var(--pc-weight-bold);
+  background: var(--pc-danger-soft);
+  border-left: 3px solid var(--pc-danger);
+  padding: var(--pc-space-xs) var(--pc-space-lg);
+  border-radius: 0 var(--pc-radius-sm) var(--pc-radius-sm) 0;
+  display: block;
+}
+
+/* 阅读模式 — 视频提示词扩展 */
+.pc-reader-camera-move {
+  color: var(--pc-camera-move);
+  font-weight: var(--pc-weight-semibold);
+}
+
+.pc-reader-scene-transition {
+  color: var(--pc-scene-transition);
+  font-weight: var(--pc-weight-semibold);
+  background: var(--pc-transition-soft);
+  border-radius: var(--pc-radius-sm);
+  padding: 0 var(--pc-space-xs);
+}
+
+/* ============================================================
+ * 七、设置面板 — Mac 极简卡片式布局 v3
+ * 核心改动：增大留白、统一令牌、精简装饰
+ * ============================================================ */
+
+/* 设置面板容器 */
+.prompt-colorizer-setting-tab {
+  max-width: 760px;
+}
+
+/* ---- 状态概览条 ---- */
+.pc-status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-xl);
+  padding: var(--pc-space-lg) var(--pc-space-xl);
+  margin-bottom: var(--pc-space-2xl);
+  background: var(--pc-status-bar-bg);
+  border: 1px solid var(--pc-status-bar-border);
+  border-radius: var(--pc-radius-md);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.pc-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-sm);
+  white-space: nowrap;
+}
+
+.pc-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--pc-radius-full);
+  flex-shrink: 0;
+  transition: all var(--pc-transition);
+}
+
+.pc-status-dot.on {
+  background: var(--pc-success);
+  box-shadow: 0 0 3px rgba(16, 185, 129, 0.35);
+}
+
+.pc-status-dot.off {
+  background: var(--pc-gray-400);
+}
+
+/* 状态概览条 — 规则计数 */
+.pc-status-count {
+  margin-left: auto;
+  padding-left: var(--pc-space-lg);
+  border-left: 1px solid var(--pc-divider);
+  font-weight: var(--pc-weight-medium);
+  color: var(--text-normal);
+}
+
+.pc-status-count-num {
+  color: var(--pc-accent);
+  font-weight: var(--pc-weight-bold);
+  font-size: var(--font-ui-medium);
+}
+
+/* ---- 预设方案选择器 ---- */
+.pc-preset-bar {
+  display: flex;
+  gap: var(--pc-space-sm);
+  margin-bottom: var(--pc-space-2xl);
+  flex-wrap: wrap;
+}
+
+.pc-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-sm);
+  padding: var(--pc-space-sm) var(--pc-space-lg);
+  border-radius: var(--pc-radius-md);
+  border: 1px solid var(--pc-card-border);
+  background: var(--pc-preset-bg);
+  color: var(--text-normal);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--pc-weight-medium);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+  white-space: nowrap;
+}
+
+.pc-preset-btn:hover {
+  background: var(--pc-preset-hover);
+  border-color: var(--pc-card-hover-border);
+  transform: translateY(-1px);
+  box-shadow: var(--pc-shadow-xs);
+}
+
+.pc-preset-btn:active {
+  transform: scale(0.97);
+}
+
+.pc-preset-btn.active {
+  background: var(--pc-preset-active);
+  border-color: var(--pc-preset-active-border);
+  color: var(--pc-info);
+  font-weight: var(--pc-weight-semibold);
+}
+
+/* ============================================================
+ * 智能体预设(v3) — 卡片式预设 + 新建/重命名/删除
+ * ============================================================ */
+
+.pc-agent-section {
+  margin-bottom: var(--pc-space-2xl);
+}
+
+.pc-agent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pc-space-md);
+  margin-bottom: var(--pc-space-md);
+  flex-wrap: wrap;
+}
+
+.pc-agent-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pc-agent-title {
+  font-size: var(--font-ui-medium);
+  font-weight: var(--pc-weight-semibold);
+  color: var(--pc-section-title);
+  letter-spacing: 0.01em;
+}
+
+.pc-agent-desc {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pc-agent-new-btn {
+  padding: var(--pc-space-sm) var(--pc-space-lg);
+  border-radius: var(--pc-radius-md);
+  border: 1px dashed var(--pc-card-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--pc-weight-medium);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+  white-space: nowrap;
+}
+
+.pc-agent-new-btn:hover {
+  border-color: var(--pc-info-border);
+  border-style: solid;
+  color: var(--pc-info);
+  background: var(--pc-info-soft);
+}
+
+.pc-agent-new-btn:active {
+  transform: scale(0.97);
+}
+
+/* 卡片网格 — 自适应 */
+.pc-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--pc-space-md);
+}
+
+.pc-agent-card {
+  position: relative;
+  background: var(--pc-card-bg);
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--pc-radius-md);
+  box-shadow: var(--pc-shadow-xs);
+  transition: box-shadow var(--pc-transition), border-color var(--pc-transition), transform var(--pc-transition);
+  overflow: hidden;
+}
+
+.pc-agent-card:hover {
+  box-shadow: var(--pc-shadow-md);
+  border-color: var(--pc-card-hover-border);
+}
+
+.pc-agent-card.active {
+  border-color: var(--pc-info);
+  box-shadow: var(--pc-shadow-sm), inset 3px 0 0 0 var(--pc-info);
+}
+
+.pc-agent-card-body {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-md);
+  padding: var(--pc-space-lg) var(--pc-space-xl);
+  cursor: pointer;
+}
+
+.pc-agent-card-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.pc-agent-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pc-agent-card-name {
+  font-size: var(--font-ui-medium);
+  font-weight: var(--pc-weight-semibold);
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-agent-card-desc {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc-agent-card-badge {
+  display: inline-flex;
+  align-items: baseline;
+  padding: var(--pc-space-xs) var(--pc-space-sm);
+  border-radius: var(--pc-radius-full);
+  background: var(--pc-gray-100);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pc-agent-card-badge-num {
+  font-weight: var(--pc-weight-semibold);
+  color: var(--pc-accent);
+}
+
+.pc-agent-card-active {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--pc-space-xs) var(--pc-space-sm);
+  border-radius: var(--pc-radius-full);
+  background: var(--pc-info-soft);
+  color: var(--pc-info);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--pc-weight-semibold);
+  flex-shrink: 0;
+}
+
+.pc-agent-card-actions {
+  display: flex;
+  gap: var(--pc-space-xs);
+  padding: 0 var(--pc-space-xl) var(--pc-space-lg);
+  border-top: 1px solid var(--pc-divider);
+  margin-top: -1px;
+  padding-top: var(--pc-space-sm);
+}
+
+.pc-agent-action-btn {
+  flex: 1;
+  padding: var(--pc-space-xs) var(--pc-space-sm);
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--pc-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+}
+
+.pc-agent-action-btn:hover {
+  background: var(--pc-info-soft);
+  color: var(--pc-info);
+  border-color: var(--pc-info-border);
+}
+
+.pc-agent-action-danger:hover {
+  background: var(--pc-danger-soft);
+  color: var(--pc-danger);
+  border-color: var(--pc-danger-border);
+}
+
+/* 智能体预设名称输入弹窗 */
+.pc-agent-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-md);
+  padding: var(--pc-space-md) 0;
+}
+
+.pc-agent-input {
+  width: 100%;
+  padding: var(--pc-space-md) var(--pc-space-lg);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--pc-radius-sm);
+  background: var(--background-modifier-form-field);
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  transition: all var(--pc-transition);
+}
+
+.pc-agent-input:focus {
+  outline: none;
+  border-color: var(--pc-info);
+  box-shadow: var(--pc-shadow-focus);
+}
+
+.pc-agent-form-actions {
+  display: flex;
+  gap: var(--pc-space-sm);
+  justify-content: flex-end;
+  margin-top: var(--pc-space-sm);
+}
+
+.pc-agent-form-cancel,
+.pc-agent-form-confirm {
+  padding: var(--pc-space-sm) var(--pc-space-xl);
+  border-radius: var(--pc-radius-sm);
+  font-size: var(--font-ui-medium);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+}
+
+.pc-agent-form-cancel {
+  border: 1px solid var(--pc-card-border);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.pc-agent-form-cancel:hover {
+  background: var(--pc-gray-100);
+}
+
+/* ============================================================
+ * 实时效果预览(v3)
+ * ============================================================ */
+
+.pc-preview-sample {
+  font-family: var(--pc-font-mono);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: var(--pc-space-lg) var(--pc-space-xl);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--pc-radius-md);
+  color: var(--text-normal);
+  overflow-x: auto;
+}
+
+.pc-preview-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: var(--pc-space-lg);
+}
+
+/* 深色模式适配 */
+.theme-dark .pc-agent-card-badge,
+.pc-dark .pc-agent-card-badge {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-dark .pc-agent-new-btn:hover,
+.pc-dark .pc-agent-new-btn:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+/* 响应式 — 窄屏单列 */
+@media (max-width: 600px) {
+  .pc-agent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pc-agent-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pc-agent-new-btn {
+    width: 100%;
+  }
+}
+
+/* ---- 卡片分区 — Mac 极简：充足留白 ---- */
+.pc-setting-card {
+  background: var(--pc-card-bg);
+  backdrop-filter: blur(var(--pc-blur-amount)) saturate(var(--pc-blur-saturate));
+  -webkit-backdrop-filter: blur(var(--pc-blur-amount)) saturate(var(--pc-blur-saturate));
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--pc-card-radius);
+  padding: var(--pc-space-2xl) var(--pc-space-3xl);
+  margin-bottom: var(--pc-space-2xl);
+  box-shadow: var(--pc-shadow-sm);
+  transition: box-shadow var(--pc-transition), border-color var(--pc-transition);
+}
+
+.pc-setting-card:hover {
+  box-shadow: var(--pc-shadow-md);
+  border-color: var(--pc-card-hover-border);
+}
+
+/* 卡片标题 — 含图标 */
+.pc-setting-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-sm);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--pc-weight-semibold);
+  color: var(--pc-section-title);
+  margin-bottom: var(--pc-space-sm);
+  padding-bottom: var(--pc-space-md);
+  border-bottom: 1px solid var(--pc-divider);
+  letter-spacing: 0.01em;
+}
+
+.pc-setting-card-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+/* 卡片描述 */
+.pc-setting-card-desc {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-bottom: var(--pc-space-lg);
+  line-height: 1.5;
+}
+
+/* ---- 卡片内设置项 — 标准化列表 ---- */
+.pc-setting-card .setting-item {
+  padding: var(--pc-space-md) 0;
+  border-bottom: 1px solid var(--pc-divider);
+  transition: background var(--pc-transition-fast);
+  border-radius: var(--pc-radius-sm);
+  margin: 0 calc(-1 * var(--pc-space-sm));
+  padding-left: var(--pc-space-sm);
+  padding-right: var(--pc-space-sm);
+}
+
+.pc-setting-card .setting-item:hover {
+  background: var(--pc-item-hover);
+}
+
+.pc-setting-card .setting-item:last-child {
+  border-bottom: none;
+}
+
+/* 卡片内标题项 */
+.pc-setting-card .setting-item-heading {
+  padding-bottom: var(--pc-space-sm);
+  margin-bottom: var(--pc-space-sm);
+}
+
+/* ---- 批量操作行 ---- */
+.pc-batch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--pc-space-sm) var(--pc-space-md);
+  margin-bottom: var(--pc-space-md);
+  background: var(--pc-gray-100);
+  border-radius: var(--pc-radius-md);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+body.theme-dark .pc-batch-row {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pc-batch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-xs);
+  padding: var(--pc-space-xs) var(--pc-space-md);
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--pc-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+}
+
+.pc-batch-btn:hover {
+  background: var(--pc-info-soft);
+  color: var(--pc-info);
+  border-color: var(--pc-info-border);
+}
+
+.pc-batch-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---- 颜色设置项 — 含预览圆点 ---- */
+.pc-color-setting {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-md);
+  padding: var(--pc-space-sm) 0;
+}
+
+.pc-color-preview {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--pc-radius-full);
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: transform var(--pc-transition), box-shadow var(--pc-transition);
+}
+
+.pc-color-preview:hover {
+  transform: scale(1.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 0 5px currentColor,
+    0 1px 3px rgba(0, 0, 0, 0.10);
+}
+
+/* ---- 确认对话框（使用 Obsidian 原生 Modal）---- */
+.pc-confirm-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: var(--pc-card-bg);
+  backdrop-filter: blur(var(--pc-blur-amount)) saturate(var(--pc-blur-saturate));
+  -webkit-backdrop-filter: blur(var(--pc-blur-amount)) saturate(var(--pc-blur-saturate));
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--pc-radius-lg);
+  padding: var(--pc-space-3xl);
+  box-shadow: var(--pc-shadow-lg);
+  max-width: 360px;
+  text-align: center;
+}
+
+.pc-confirm-dialog-title {
+  font-size: var(--font-ui-medium);
+  font-weight: var(--pc-weight-semibold);
+  margin-bottom: var(--pc-space-md);
+  color: var(--text-normal);
+}
+
+.pc-confirm-dialog-desc {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-bottom: var(--pc-space-xl);
+  line-height: 1.5;
+}
+
+.pc-confirm-dialog-actions {
+  display: flex;
+  gap: var(--pc-space-md);
+  justify-content: center;
+}
+
+.pc-confirm-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.20);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* ============================================================
+ * 八、Obsidian 原生组件增强 — 交互四原则
+ * ============================================================ */
+
+/* Toggle 开关 — 统一开色 + 微妙过渡 */
+.pc-setting-card .checkbox-container {
+  background: var(--pc-gray-400);
+  transition: background var(--pc-transition), box-shadow var(--pc-transition);
+}
+
+.pc-setting-card .checkbox-container.is-enabled {
+  background: var(--pc-toggle-on);
+}
+
+.pc-setting-card .checkbox-container.is-enabled:hover {
+  box-shadow: 0 0 0 2px var(--pc-accent-glow);
+}
+
+/* Dropdown — 统一圆角与边框 */
+.pc-setting-card select.dropdown {
+  border-radius: var(--pc-radius-sm);
+  transition: all var(--pc-transition);
+}
+
+.pc-setting-card select.dropdown:hover {
+  border-color: var(--pc-info-border);
+}
+
+.pc-setting-card select.dropdown:focus {
+  box-shadow: var(--pc-shadow-focus);
+  border-color: var(--pc-info);
+}
+
+/* Slider — 统一轨道 */
+.pc-setting-card .slider {
+  transition: opacity var(--pc-transition);
+}
+
+.pc-setting-card .slider:hover {
+  opacity: 0.85;
+}
+
+/* 按钮 — 统一交互态 */
+.pc-setting-card button {
+  border-radius: var(--pc-radius-sm);
+  transition: all var(--pc-transition);
+}
+
+.pc-setting-card button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--pc-shadow-xs);
+}
+
+.pc-setting-card button:active {
+  transform: scale(0.97);
+}
+
+/* Color Picker — 圆形预览 */
+.pc-setting-card input[type="color"] {
+  border-radius: var(--pc-radius-full);
+  border: 2px solid var(--pc-card-border);
+  cursor: pointer;
+  transition: all var(--pc-transition);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.pc-setting-card input[type="color"]:hover {
+  border-color: var(--pc-info-border);
+  transform: scale(1.08);
+  box-shadow: var(--pc-shadow-xs);
+}
+
+.pc-setting-card input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.pc-setting-card input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--pc-radius-full);
+}
+
+/* ============================================================
+ * 九、角色边框（可选显示）
+ * ============================================================ */
+
+body.pc-show-role-borders .cm-line.pc-role-system-header,
+body.pc-show-role-borders .cm-line.pc-role-user-header,
+body.pc-show-role-borders .cm-line.pc-role-assistant-header {
+  border-left-width: 4px;
+}
+
+/* ============================================================
+ * 十、动画与过渡（Mac 极简：克制使用）
+ * ============================================================ */
+
+/* 卡片入场动画 — 极其微妙 */
+.pc-setting-card {
+  animation: pc-card-fade-in 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pc-card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 状态概览条入场 */
+.pc-status-bar {
+  animation: pc-status-slide-in 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pc-status-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 预设按钮入场 */
+.pc-preset-bar {
+  animation: pc-preset-fade-in 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pc-preset-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
+ * 十一、打印模式（隐藏所有着色）
+ * ============================================================ */
+
+@media print {
+  .pc-variable,
+  .pc-asset-ref,
+  .pc-asset-bracket,
+  .pc-audio-ref,
+  .pc-audio-tone,
+  .pc-audio-sfx,
+  .pc-section-marker,
+  .pc-shot-header,
+  .pc-field-label,
+  .pc-field-label-generic,
+  .pc-dialogue,
+  .pc-negative-prompt,
+  .pc-tech-param,
+  .pc-parenthetical,
+  .pc-emphasis-weight,
+  .pc-lora-ref,
+  .pc-bracket-emphasis-strong,
+  .pc-bracket-emphasis-weak,
+  .pc-quality-tag,
+  .pc-camera-move,
+  .pc-scene-transition,
+  .pc-comment,
+  .pc-inline-code,
+  .pc-role-system-tag,
+  .pc-role-user-tag,
+  .pc-role-assistant-tag,
+  .pc-role-tool-tag,
+  .pc-instruction-open,
+  .pc-instruction-close {
+    color: inherit !important;
+    background: transparent !important;
+    font-weight: inherit !important;
+    font-style: inherit !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .pc-file-dot,
+  .pc-tab-indicator,
+  .pc-file-type-badge {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+ * 十二、响应式适配
+ * ============================================================ */
+
+/* 中等屏幕 — 收紧间距 */
+@media (max-width: 1024px) {
+  .pc-setting-card {
+    padding: var(--pc-space-xl) var(--pc-space-2xl);
+  }
+
+  .pc-status-bar {
+    gap: var(--pc-space-md);
+  }
+}
+
+/* 小屏幕 — 进一步收紧 */
+@media (max-width: 768px) {
+  .pc-setting-card {
+    padding: var(--pc-space-lg) var(--pc-space-xl);
+    border-radius: var(--pc-radius-md);
+  }
+
+  .cm-line .pc-section-marker {
+    padding: 1px var(--pc-space-md);
+  }
+
+  .pc-preset-bar {
+    gap: var(--pc-space-xs);
+  }
+
+  .pc-preset-btn {
+    padding: var(--pc-space-xs) var(--pc-space-md);
+    font-size: 11px;
+  }
+
+  .pc-status-bar {
+    font-size: 11px;
+    padding: var(--pc-space-sm) var(--pc-space-md);
+  }
+
+  .pc-status-count {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    width: 100%;
+    padding-top: var(--pc-space-sm);
+    margin-top: var(--pc-space-xs);
+    border-top: 1px solid var(--pc-divider);
+  }
+}
+
+/* 移动端 — 最小化装饰 */
+@media (max-width: 600px) {
+  .pc-setting-card {
+    padding: var(--pc-space-md);
+    margin-bottom: var(--pc-space-md);
+    border-radius: var(--pc-radius-sm);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: none;
+  }
+
+  .pc-file-dot {
+    margin-right: var(--pc-space-sm);
+  }
+
+  .pc-status-bar {
+    padding: var(--pc-space-sm);
+    border-radius: var(--pc-radius-sm);
+    animation: none;
+  }
+
+  .pc-preset-bar {
+    flex-direction: column;
+    animation: none;
+  }
+
+  .pc-preset-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+ * DSL 着色样式
+ * DSL 着色样式由动态颜色引擎自动生成（#prompt-colorizer-dsl-styles）
+ * 颜色变量由 YAML colors 区块自动生成（#prompt-colorizer-color-vars）
+ * 插件代码不包含任何 DSL 颜色硬编码，完全由 Git 托管的 YAML 规则驱动
+ * ============================================================ */
+
+/* ============================================================
+ * 拉取报告面板样式
+ * ============================================================ */
+
+/* 以下硬编码的 .dsl-* 样式已删除 — 由动态颜色引擎 generateStyleCss() 自动生成 */
+
+/* ============================================================
+ * 拉取报告面板样式
+ * ============================================================ */
+
+/* 分隔线 */
+.pc-setting-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 16px 0;
+}
+
+/* 报告面板容器 */
+.pc-pull-report {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* 报告标题 */
+.pc-pull-report-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 12px;
+}
+
+/* 空报告提示 */
+.pc-pull-report-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* 状态概览区 */
+.pc-pull-report-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+/* 状态徽章 */
+.pc-report-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pc-report-status-badge.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.pc-report-status-badge.failed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.pc-report-status-badge.no-update {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+}
+
+/* 指标网格 */
+.pc-report-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.pc-report-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.pc-report-metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pc-report-metric-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 错误信息 */
+.pc-pull-report-error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.06);
+  border-radius: 6px;
+  border-left: 3px solid #ef4444;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+/* 报告子区块 */
+.pc-report-section {
+  margin-top: 16px;
+}
+
+.pc-report-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+}
+
+/* 报告表格 */
+.pc-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pc-report-table th {
+  text-align: left;
+  padding: 6px 10px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pc-report-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pc-report-table tbody tr:hover {
+  background: var(--background-primary);
+}
+
+/* 文件状态标签 */
+.pc-file-status {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pc-file-status.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.pc-file-status.failed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+/* 暗色模式适配 */
+.theme-dark .pc-report-status-badge.success,
+.pc-dark .pc-report-status-badge.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.theme-dark .pc-report-status-badge.failed,
+.pc-dark .pc-report-status-badge.failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.theme-dark .pc-file-status.success,
+.pc-dark .pc-file-status.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.theme-dark .pc-file-status.failed,
+.pc-dark .pc-file-status.failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* ============================================================
+ * 五-B、Tab 分页导航系统（v3 新增）
+ * 设计原则：Mac 极简分段控件 + 即时视觉反馈
+ * ============================================================ */
+
+/* Tab 导航容器 — 毛玻璃底栏 */
+.pc-tab-nav {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: var(--pc-card-bg);
+  backdrop-filter: blur(var(--pc-blur-amount));
+  -webkit-backdrop-filter: blur(var(--pc-blur-amount));
+  border-radius: var(--pc-radius-lg);
+  border: 1px solid var(--pc-card-border);
+  box-shadow: var(--pc-shadow-xs);
+}
+
+/* 单个 Tab 项 */
+.pc-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: var(--pc-radius-md);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: var(--pc-weight-medium);
+  transition: all var(--pc-transition);
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+/* Tab 悬浮态 — 变色 + 背景渐现 */
+.pc-tab-item:hover {
+  color: var(--text-normal);
+  background: var(--pc-item-hover);
+  transform: translateY(-1px);
+}
+
+/* Tab 激活态 — 蓝信主色 + 外发光 */
+.pc-tab-item.active {
+  color: var(--pc-info);
+  background: var(--pc-info-soft);
+  border-color: var(--pc-info-border);
+  font-weight: var(--pc-weight-semibold);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.08), var(--pc-shadow-sm);
+}
+
+/* Tab 点击态 — 轻微缩放 */
+.pc-tab-item:active {
+  transform: scale(0.97);
+}
+
+/* Tab 图标 */
+.pc-tab-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity var(--pc-transition);
+}
+
+.pc-tab-item:hover .pc-tab-icon,
+.pc-tab-item.active .pc-tab-icon {
+  opacity: 1;
+}
+
+/* Tab 标签文字 */
+.pc-tab-label {
+  white-space: nowrap;
+}
+
+/* Tab 内容容器 */
+.pc-tab-content {
+  animation: pc-tab-fade-in var(--pc-transition-slow) ease-out;
+}
+
+@keyframes pc-tab-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+ * 五-C、可折叠分区系统（高亮规则专用）
+ * 设计原则：点击切换 + chevron 旋转反馈 + 降噪折叠
+ * ============================================================ */
+
+/* 可折叠分区容器 */
+.pc-collapsible {
+  margin-bottom: 12px;
+  border-radius: var(--pc-card-radius);
+  background: var(--pc-card-bg);
+  border: 1px solid var(--pc-card-border);
+  overflow: hidden;
+  transition: box-shadow var(--pc-transition);
+  backdrop-filter: blur(var(--pc-blur-amount));
+  -webkit-backdrop-filter: blur(var(--pc-blur-amount));
+}
+
+.pc-collapsible:hover {
+  box-shadow: var(--pc-shadow-sm);
+}
+
+/* 标题栏 — 可点击区域 */
+.pc-collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--pc-transition);
+  user-select: none;
+}
+
+.pc-collapsible-header:hover {
+  background: var(--pc-item-hover);
+}
+
+/* 标题栏左侧 — chevron + 图标 + 标题 */
+.pc-collapsible-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Chevron 旋转图标 — CSS 纯绘制 */
+.pc-collapsible-chevron {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-muted);
+  transition: transform var(--pc-transition);
+  flex-shrink: 0;
+  transform: rotate(0deg);
+}
+
+/* 展开态 — chevron 旋转 90deg */
+.pc-collapsible:not(.collapsed) .pc-collapsible-chevron {
+  transform: rotate(90deg);
+}
+
+/* 折叠态 — chevron 恢复 */
+.pc-collapsible.collapsed .pc-collapsible-chevron {
+  transform: rotate(0deg);
+}
+
+/* 卡片图标 */
+.pc-collapsible-icon {
+  display: flex;
+  align-items: center;
+  color: var(--pc-info);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* 标题与描述容器 */
+.pc-collapsible-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* 分区标题 */
+.pc-collapsible-title {
+  font-size: 14px;
+  font-weight: var(--pc-weight-semibold);
+  color: var(--text-normal);
+}
+
+/* 分区描述 */
+.pc-collapsible-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 标题栏右侧 — 计数 + 批量按钮 */
+.pc-collapsible-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 计数徽章 */
+.pc-rule-count-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  padding: 2px 8px;
+  border-radius: var(--pc-radius-full);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-rule-count-active {
+  font-weight: var(--pc-weight-bold);
+  color: var(--pc-info);
+}
+
+.pc-rule-count-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.pc-rule-count-total {
+  color: var(--text-muted);
+}
+
+/* 批量按钮容器 */
+.pc-collapsible-batch {
+  display: flex;
+  gap: 4px;
+}
+
+/* 小尺寸批量按钮 */
+.pc-batch-btn-sm {
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+  border-radius: var(--pc-radius-sm) !important;
+}
+
+/* 可折叠内容区 */
+.pc-collapsible-content {
+  padding: 0 16px 8px 16px;
+  transition: max-height var(--pc-transition-slow) ease;
+}
+
+/* 折叠态 — 隐藏内容区 */
+.pc-collapsible.collapsed .pc-collapsible-content {
+  display: none;
+}
+
+/* ============================================================
+ * 五-D、设置面板分隔线
+ * ============================================================ */
+
+.pc-setting-divider {
+  height: 1px;
+  margin: 16px 0;
+  background: var(--pc-divider);
+  border: none;
+}
+
+/* ============================================================
+ * 五-E、深色模式 Tab 与折叠分区适配
+ * ============================================================ */
+
+.theme-dark .pc-tab-nav,
+.pc-dark .pc-tab-nav {
+  background: var(--pc-card-bg);
+  border-color: var(--pc-card-border);
+}
+
+.theme-dark .pc-tab-item.active,
+.pc-dark .pc-tab-item.active {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.20);
+  color: #60a5fa;
+}
+
+.theme-dark .pc-collapsible,
+.pc-dark .pc-collapsible {
+  background: var(--pc-card-bg);
+  border-color: var(--pc-card-border);
+}
+
+.theme-dark .pc-rule-count-badge,
+.pc-dark .pc-rule-count-badge {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.theme-dark .pc-rule-count-active,
+.pc-dark .pc-rule-count-active {
+  color: #60a5fa;
+}
+
+/* ============================================================
+ * 五-F、响应式适配（768px / 600px 断点）
+ * ============================================================ */
+
+@media (max-width: 768px) {
+  .pc-tab-nav {
+    gap: 1px;
+    padding: 3px;
+  }
+
+  .pc-tab-item {
+    padding: 6px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .pc-collapsible-header {
+    padding: 10px 12px;
+  }
+
+  .pc-collapsible-content {
+    padding: 0 12px 6px 12px;
+  }
+
+  .pc-collapsible-desc {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .pc-tab-label {
+    display: none;
+  }
+
+  .pc-tab-item {
+    padding: 8px;
+  }
+
+  .pc-tab-icon {
+    opacity: 1;
+  }
+
+  .pc-collapsible-batch {
+    display: none;
+  }
+
+  .pc-collapsible-header-right .pc-rule-count-badge {
+    font-size: 10px;
+  }
+}
+
+/* ============================================================
+ * 六、新增组件样式（颜色预览圆点 + Git 解析 + 颜色自定义）
+ * ============================================================ */
+
+/* 高亮规则颜色预览圆点 — 显示在规则名称旁 */
+.pc-rule-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--pc-radius-full);
+  margin-right: var(--pc-space-sm);
+  margin-left: var(--pc-space-xs);
+  vertical-align: middle;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+  transition: transform var(--pc-transition);
+  flex-shrink: 0;
+}
+
+body.theme-dark .pc-rule-color-dot {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Git URL 自动解析状态提示 */
+.pc-git-parse-hint {
+  margin: var(--pc-space-md) var(--pc-space-2xl);
+  padding: var(--pc-space-md) var(--pc-space-lg);
+  background: var(--pc-status-bar-bg);
+  border: 1px solid var(--pc-status-bar-border);
+  border-radius: var(--pc-radius-md);
+  font-size: 12px;
+  font-family: var(--font-monospace);
+  word-break: break-all;
+}
+
+.pc-git-parse-status {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+body.theme-dark .pc-git-parse-hint {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.12);
+}
+
+/* 颜色自定义区域 — 预览圆点放大版 */
+.pc-color-custom .pc-color-preview {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--pc-space-md);
+}
+
+/* 颜色自定义区域的 Setting 项间距优化 */
+.pc-color-custom .setting-item {
+  padding: 10px 0;
+}
+
+/* 颜色自定义区域的输入框等宽显示 */
+.pc-color-custom input[type="text"] {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  width: 90px;
+  text-transform: lowercase;
+}
+
+/* 颜色自定义区域的颜色选择器对齐 */
+.pc-color-custom .setting-item-control {
+  gap: var(--pc-space-sm);
+  align-items: center;
+}
+
+/* === 中文显示优化（v2.4.1）=== */
+
+/* DSL 编辑器行高优化：适配中文笔画高度，避免阅读拥挤 */
+.cm-editor .cm-line {
+  line-height: 1.7;
+}
+
+/* 中文避头尾规则：标点不孤立于行首/行尾 */
+.cm-editor .cm-line {
+  line-break: strict;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 全角标点挤压（浏览器不支持时安全回退） */
+@supports (font-feature-settings: "halt" 1) {
+  .cm-editor .cm-line {
+    font-feature-settings: "halt" 1;
+  }
+}
+
+/* 阅读模式 DSL 块同步排版优化 */
+.pc-reader-dsl-block {
+  line-height: 1.7;
+  line-break: strict;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* ============================================================
+ * 自定义文本颜色 — 浮动快速着色面板（Apple 毛玻璃 + 微动入场）
+ * ============================================================ */
+
+.pc-color-popover {
+  position: absolute;
+  z-index: var(--layer-popover, 100);
+  min-width: 280px;
+  max-width: 340px;
+  padding: 10px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  transform-origin: top center;
+  transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* 深色模式下背景适配 */
+.theme-dark .pc-color-popover {
+  background-color: rgba(var(--mono-rgb-100), 0.12);
+  border-color: var(--background-modifier-border);
+}
+
+/* 向上弹出时 */
+.pc-color-popover.pc-popover-above {
+  transform-origin: bottom center;
+  transform: translateY(4px) scale(0.96);
+}
+
+/* 可见状态 */
+.pc-color-popover.pc-popover-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* 退场动画 */
+.pc-color-popover.pc-popover-hiding {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.96);
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+.pc-color-popover.pc-popover-above.pc-popover-hiding {
+  transform: translateY(4px) scale(0.96);
+}
+
+/* ---- 已有颜色提示（紧凑横条，仅 existing 时显示）---- */
+.pc-popover-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pc-popover-hint-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+/* ---- 预设色板（6 列圆角方形）---- */
+.pc-popover-palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 4px;
+}
+
+.pc-popover-swatch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 150ms ease,
+              border-color 150ms ease;
+  outline: none;
+}
+
+.pc-popover-swatch:hover,
+.pc-popover-swatch:focus-visible {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  border-color: var(--text-muted);
+  z-index: 1;
+}
+
+.pc-popover-swatch:active {
+  transform: scale(1.02);
+}
+
+.pc-popover-swatch.active {
+  border-color: var(--text-normal);
+  box-shadow: 0 0 0 2px var(--background-primary), 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.pc-popover-swatch-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pc-popover-swatch.active .pc-popover-swatch-check::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  opacity: 1;
+}
+
+.pc-popover-swatch.active .pc-popover-swatch-check {
+  opacity: 1;
+}
+
+/* ---- 分隔线 ---- */
+.pc-popover-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 8px 0 6px;
+  opacity: 0.6;
+}
+
+/* ---- 底部操作区（图标按钮，右对齐）---- */
+.pc-popover-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 2px 4px 0;
+}
+
+.pc-popover-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pc-popover-action:hover {
+  color: var(--pc-info, var(--text-accent));
+  background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border);
+}
+
+.pc-popover-action:active {
+  transform: scale(0.92);
+}
+
+.pc-popover-action.pc-popover-remove:hover {
+  color: var(--text-error, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================================
+ * 自定义文本颜色 — 颜色选择器模态框（Apple 极简风格）
+ * ============================================================ */
+
+.pc-color-picker-modal {
+  --pc-cp-padding: var(--pc-space-3xl);
+  --pc-cp-section-gap: var(--pc-space-3xl);
+  --pc-cp-swatch-size: 36px;
+  --pc-cp-radius: var(--pc-radius-md);
+  max-width: 520px;
+  padding: var(--pc-cp-padding);
+}
+
+.pc-color-picker-modal .modal-title {
+  font-size: 16px;
+  font-weight: var(--pc-weight-semibold);
+  color: var(--text-normal);
+  margin-bottom: var(--pc-space-xl);
+  padding: 0 0 var(--pc-space-md) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pc-cp-section {
+  margin-bottom: var(--pc-cp-section-gap);
+}
+
+.pc-cp-section:last-child {
+  margin-bottom: 0;
+}
+
+.pc-cp-label {
+  font-size: 12px;
+  font-weight: var(--pc-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--pc-space-md);
+}
+
+/* ---- 预览区 ---- */
+.pc-cp-preview {
+  padding: var(--pc-space-xl) var(--pc-space-2xl);
+  background: var(--background-secondary);
+  border-radius: var(--pc-cp-radius);
+  border: 1px solid var(--background-modifier-border);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: var(--pc-weight-medium);
+  word-break: break-word;
+  text-align: center;
+}
+
+.pc-cp-preview-text {
+  transition: color var(--pc-transition);
+}
+
+/* ---- 预设色板 ---- */
+.pc-cp-palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--pc-space-md);
+}
+
+.pc-cp-swatch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: var(--pc-cp-swatch-size);
+  border-radius: var(--pc-radius-full);
+  cursor: pointer;
+  border: 2px solid transparent;
+  box-shadow: var(--pc-shadow-xs);
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms ease,
+              border-color 200ms ease;
+  outline: none;
+}
+
+.pc-cp-swatch:hover,
+.pc-cp-swatch:focus-visible {
+  transform: scale(1.12) translateY(-2px);
+  box-shadow: var(--pc-shadow-md);
+  border-color: var(--text-muted);
+}
+
+.pc-cp-swatch:active {
+  transform: scale(1.04);
+}
+
+.pc-cp-swatch.active {
+  border-color: var(--text-normal);
+  box-shadow: 0 0 0 2px var(--background-primary), var(--pc-shadow-md);
+}
+
+.pc-cp-swatch.active:hover,
+.pc-cp-swatch.active:focus-visible {
+  transform: scale(1.12) translateY(-2px);
+}
+
+/* 选中标记（对号） */
+.pc-cp-swatch-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity var(--pc-transition-fast);
+}
+
+.pc-cp-swatch.active .pc-cp-swatch-check::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: var(--pc-weight-bold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  opacity: 1;
+}
+
+.pc-cp-swatch.active .pc-cp-swatch-check {
+  opacity: 1;
+}
+
+/* ---- 自定义颜色选择器行 ---- */
+.pc-cp-custom-row {
+  display: flex;
+  gap: var(--pc-space-md);
+  align-items: center;
+}
+
+.pc-cp-color-input {
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--pc-cp-radius);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pc-cp-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.pc-cp-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: calc(var(--pc-cp-radius) - 2px);
+}
+
+.pc-cp-hex-input {
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--pc-space-md);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--pc-cp-radius);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-family: var(--pc-font-mono);
+  font-size: 13px;
+  transition: border-color var(--pc-transition), box-shadow var(--pc-transition);
+}
+
+.pc-cp-hex-input:focus {
+  outline: none;
+  border-color: var(--pc-info);
+  box-shadow: var(--pc-shadow-focus);
+}
+
+/* ---- 操作按钮 ---- */
+.pc-cp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--pc-space-md);
+  margin-top: var(--pc-space-2xl);
+  padding-top: var(--pc-space-xl);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.pc-cp-actions button {
+  min-width: 88px;
+  height: 36px;
+  padding: 0 var(--pc-space-xl);
+  border-radius: var(--pc-cp-radius);
+  font-size: 13px;
+  font-weight: var(--pc-weight-medium);
+  cursor: pointer;
+  transition: all var(--pc-transition-fast);
+}
+
+.pc-cp-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.pc-cp-actions button:active {
+  transform: scale(0.97);
+}
+
+.pc-cp-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- 匹配选项 Setting ---- */
+.pc-color-picker-modal .setting-item {
+  padding: var(--pc-space-md) 0;
+  border: none;
+}
+
+.pc-color-picker-modal .setting-item-description {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+ * 自定义文本颜色 — 设置面板管理区域
+ * ============================================================ */
+
+.pc-custom-text {
+  /* 卡片整体已由 renderCard 提供 */
+}
+
+/* 提示条 */
+.pc-custom-text-tip {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-md);
+  padding: var(--pc-space-md) var(--pc-space-lg);
+  margin: var(--pc-space-md) 0 var(--pc-space-xl) 0;
+  background: var(--pc-info-soft);
+  border: 1px solid var(--pc-info-border);
+  border-radius: var(--pc-radius-md);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pc-custom-text-tip-icon {
+  font-size: 14px;
+  color: var(--pc-info);
+  font-weight: var(--pc-weight-bold);
+  flex-shrink: 0;
+}
+
+.pc-custom-text-tip-text {
+  flex: 1;
+}
+
+/* 分隔线 */
+.pc-custom-text-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: var(--pc-space-lg) 0;
+}
+
+/* 规则列表 */
+.pc-custom-text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--pc-radius-md);
+  overflow: hidden;
+}
+
+/* 空状态 */
+.pc-custom-text-empty {
+  padding: var(--pc-space-3xl) var(--pc-space-xl);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--background-secondary);
+}
+
+/* 表头行 */
+.pc-custom-text-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(120px, 1.2fr) minmax(140px, 1.5fr) 60px 120px;
+  align-items: center;
+  gap: var(--pc-space-md);
+  padding: var(--pc-space-md) var(--pc-space-lg);
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background var(--pc-transition-fast);
+}
+
+.pc-custom-text-row:last-child {
+  border-bottom: none;
+}
+
+.pc-custom-text-row:not(.pc-custom-text-header):hover {
+  background: var(--background-secondary);
+}
+
+.pc-custom-text-header {
+  background: var(--background-secondary);
+  font-size: 11px;
+  font-weight: var(--pc-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: var(--pc-space-md) var(--pc-space-lg);
+}
+
+/* 列单元格 */
+.pc-custom-text-col-text {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pc-custom-text-preview {
+  display: block;
+  font-weight: var(--pc-weight-medium);
+  font-size: 13px;
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-custom-text-text-full {
+  display: none;
+}
+
+/* 颜色列 */
+.pc-custom-text-col-color {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-md);
+}
+
+.pc-custom-text-color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--pc-radius-full);
+  border: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  box-shadow: var(--pc-shadow-xs);
+}
+
+.pc-custom-text-color-hex {
+  font-family: var(--pc-font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* 匹配选项标签 */
+.pc-custom-text-col-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-xs);
+}
+
+.pc-custom-text-option-tag {
+  display: inline-block;
+  padding: 2px var(--pc-space-md);
+  font-size: 10px;
+  font-weight: var(--pc-weight-medium);
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  border-radius: var(--pc-radius-full);
+  white-space: nowrap;
+}
+
+/* 启用开关 */
+.pc-custom-text-col-enabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-custom-text-toggle {
+  width: 36px;
+  height: 20px;
+  appearance: none;
+  background: var(--background-modifier-border);
+  border-radius: var(--pc-radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--pc-transition);
+  flex-shrink: 0;
+}
+
+.pc-custom-text-toggle:checked {
+  background: var(--pc-success);
+}
+
+.pc-custom-text-toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--background-primary);
+  border-radius: var(--pc-radius-full);
+  box-shadow: var(--pc-shadow-xs);
+  transition: transform var(--pc-transition);
+}
+
+.pc-custom-text-toggle:checked::before {
+  transform: translateX(16px);
+}
+
+/* 操作按钮 */
+.pc-custom-text-col-actions {
+  display: flex;
+  gap: var(--pc-space-sm);
+  justify-content: flex-end;
+}
+
+.pc-custom-text-action-btn {
+  padding: 4px var(--pc-space-md);
+  font-size: 11px;
+  border-radius: var(--pc-radius-sm);
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--pc-transition-fast);
+  white-space: nowrap;
+}
+
+.pc-custom-text-action-btn:hover {
+  border-color: var(--pc-info-border);
+  color: var(--pc-info);
+  background: var(--pc-info-soft);
+  transform: translateY(-1px);
+}
+
+.pc-custom-text-action-btn:active {
+  transform: scale(0.97);
+}
+
+.pc-custom-text-delete-btn:hover {
+  border-color: var(--pc-danger-border);
+  color: var(--pc-danger);
+  background: var(--pc-danger-soft);
+}
+
+/* ---- 响应式（断点 768px）---- */
+@media (max-width: 768px) {
+  .pc-cp-palette {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .pc-custom-text-row {
+    grid-template-columns: 1fr 80px;
+    grid-template-rows: auto auto auto;
+    gap: var(--pc-space-sm) var(--pc-space-md);
+    padding: var(--pc-space-lg);
+  }
+
+  .pc-custom-text-col-text {
+    grid-column: 1 / -1;
+  }
+
+  .pc-custom-text-col-color {
+    grid-column: 1;
+  }
+
+  .pc-custom-text-col-options {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .pc-custom-text-col-enabled {
+    grid-column: 1;
+  }
+
+  .pc-custom-text-col-actions {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .pc-custom-text-header {
+    display: none;
+  }
+}
+
+/* ============================================================
+ * v3 令牌中心化控制 — 令牌卡片 + 关联开关 chip
+ * ============================================================ */
+.pc-token-group-details {
+  margin: 8px 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  overflow: hidden;
+}
+
+.pc-token-group-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-normal);
+  user-select: none;
+  list-style: none;
+}
+
+.pc-token-group-summary::-webkit-details-marker {
+  display: none;
+}
+
+.pc-token-group-summary::before {
+  content: "▸";
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.pc-token-group-details[open] > .pc-token-group-summary::before {
+  transform: rotate(90deg);
+}
+
+.pc-token-group-count {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.pc-token-group-details .setting-item {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pc-token-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 2px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.pc-token-chips-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pc-token-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.pc-token-chip.is-enabled {
+  background: var(--background-modifier-success-bg, rgba(16, 185, 129, 0.15));
+  color: var(--text-success, #10b981);
+  border-color: var(--text-success, #10b981);
+  font-weight: 600;
+}
+
+.pc-token-chip.is-disabled {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.pc-token-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

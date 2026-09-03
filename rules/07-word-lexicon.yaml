@@ -1,0 +1,62 @@
+# ============================================================
+# 07-word-lexicon.yaml
+# 词组语义分词词典·索引文件（v2.7.0 改造为多文件合并加载）
+# ------------------------------------------------------------
+# 本文件是词组词典系列的索引文件，仅保留分词器配置（segmenterConfig）。
+# 所有词组分组已迁移到 07a-07k 子文件，由 rule-compiler.ts 的
+# loadMergedWordLexicon 函数按字母升序合并加载。
+#
+# 文件加载顺序（按字母升序）：
+#   07-word-lexicon.yaml（本文件，索引 + segmenterConfig）
+#   → 07a-constraint-tech-phrase.yaml（约束与技术参数，5 分组）
+#   → 07b-narrative-scene-phrase.yaml（叙事场景，8 分组）
+#   → 07c-camera-action-phrase.yaml（镜头运动，1 分组）
+#   → 07d-english-core-phrase.yaml（英文核心术语，10 分组）
+#   → 07e-english-extended-phrase.yaml（英文扩展术语，9 分组）
+#   → 07f-english-subject-phrase.yaml（英文主题术语，7 分组）
+#   → 07g-director-cinematography.yaml（导演·摄影与镜头语言，7 分组）
+#   → 07h-director-lighting-color.yaml（导演·光影与色彩，6 分组）
+#   → 07i-director-editing-sound.yaml（导演·剪辑与声音，5 分组）
+#   → 07j-director-performance-screenplay.yaml（导演·表演与剧作，6 分组）
+#   → 07k-director-genre-production.yaml（导演·类型/制片/电影史，5 分组）
+#
+# 子文件分组映射表：
+#   07a: constraint_phrase, tech_param_phrase, param_key_phrase,
+#        commercial_design_phrase, photography_phrase
+#   07b: chapter_title_phrase, scene_description_phrase, character_action_phrase,
+#        atmosphere_phrase, time_season_phrase, costume_makeup_phrase,
+#        style_genre_phrase, emotion_phrase
+#   07c: camera_action_phrase
+#   07d: english_quality_phrase, english_shot_phrase, english_light_phrase,
+#        english_style_phrase, english_render_phrase, english_material_phrase,
+#        english_artist_phrase, english_negative_phrase, english_mj_param_phrase,
+#        english_prompt_eng_phrase
+#   07e: english_photo_gear_phrase, english_color_grading_phrase,
+#        english_lens_effect_phrase, english_mood_phrase,
+#        english_composition_extended_phrase, english_style_extended_phrase,
+#        english_render_extended_phrase, english_material_extended_phrase,
+#        english_vfx_extended_phrase
+#   07f: english_pose_expression_phrase, english_costume_fashion_phrase,
+#        english_architecture_scene_phrase, english_scifi_cyberpunk_phrase,
+#        english_fantasy_myth_phrase, english_creature_race_phrase,
+#        english_weapon_gear_phrase
+#   07g: cinematography_basic, shot_size_extended, camera_angle_extended,
+#        camera_movement_extended, focal_length_phrase, composition_phrase,
+#        depth_of_field_phrase
+#   07h: lighting_basic, light_quality, light_ratio, color_theory,
+#        color_psychology, color_grading_style
+#   07i: editing_basic, montage_theory, editing_rhythm, sound_design,
+#        music_score
+#   07j: performance_theory, emotion_expression, body_language,
+#        screenplay_structure, story_element, dialogue_craft
+#   07k: genre_film, film_movement, production_management,
+#        post_production, film_theory
+# ============================================================
+
+segmenterConfig:
+  # 最大词长（字符数），超过此长度的词不会被匹配
+  # 建议值 4-8，过大增加扫描成本，过小漏匹配长词
+  maxWordLength: 6
+  # 最小词长（字符数），小于此长度的连续段不进入分词
+  # 设为 2 表示单字直接交由 06 字级规则处理
+  minWordLength: 2

@@ -1,0 +1,1661 @@
+{
+  "summary": {
+    "corpusSize": 9609,
+    "existingWords": 558,
+    "totalNgrams": 12693,
+    "candidateCount": 625,
+    "classifiedCount": 225,
+    "unclassifiedCount": 400
+  },
+  "classified": {
+    "commercial_design_phrase": [
+      {
+        "word": "产品",
+        "freq": 79,
+        "length": 2
+      },
+      {
+        "word": "标题",
+        "freq": 48,
+        "length": 2
+      },
+      {
+        "word": "画面",
+        "freq": 28,
+        "length": 2
+      },
+      {
+        "word": "海报",
+        "freq": 22,
+        "length": 2
+      },
+      {
+        "word": "产品名称",
+        "freq": 21,
+        "length": 4
+      },
+      {
+        "word": "封面",
+        "freq": 21,
+        "length": 2
+      },
+      {
+        "word": "主图",
+        "freq": 16,
+        "length": 2
+      },
+      {
+        "word": "质感",
+        "freq": 15,
+        "length": 2
+      },
+      {
+        "word": "水印",
+        "freq": 10,
+        "length": 2
+      },
+      {
+        "word": "层次",
+        "freq": 9,
+        "length": 2
+      },
+      {
+        "word": "卖点",
+        "freq": 9,
+        "length": 2
+      },
+      {
+        "word": "产品摄影",
+        "freq": 8,
+        "length": 4
+      },
+      {
+        "word": "留白",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "乱码",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "比例",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "节日",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "道具",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "反射",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "视觉",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "产品摄影图",
+        "freq": 6,
+        "length": 5
+      },
+      {
+        "word": "质感真实",
+        "freq": 6,
+        "length": 4
+      },
+      {
+        "word": "产品图",
+        "freq": 6,
+        "length": 3
+      },
+      {
+        "word": "首屏",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "促销",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "虚假",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "美食",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "画面包含",
+        "freq": 5,
+        "length": 4
+      },
+      {
+        "word": "二维码",
+        "freq": 5,
+        "length": 3
+      },
+      {
+        "word": "装饰",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "按钮",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "首屏产品",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "画面右侧",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "标题文字",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "留白充足",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "副标题",
+        "freq": 4,
+        "length": 3
+      },
+      {
+        "word": "贴纸",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "教程",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "合集",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "物品",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "产品占画面",
+        "freq": 3,
+        "length": 5
+      },
+      {
+        "word": "产品广告",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "画面中心",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "美食摄影",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "详情页",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "word": "文案",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "透明",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "餐桌",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "工具",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "知识",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "家居",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "改造",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "居中完整可见",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "套装组合主图",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "详情页首屏图",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "产品广告海报",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "质感真实诱人",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "家居改造封面",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "工具推荐封面",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "画面右侧三分",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "产品真实清",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "首屏产品图",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "产品细节清",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "水印或多余",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "文案留白",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "产品标签",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "乱码文字",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "透明材质",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "产品主图",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "卖点主图",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "节日促销",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "夸张爆炸",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "按钮区域",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "促销海报",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "画面下方",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "标题区域",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "画面明亮",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "探店封面",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "美食封面",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "排版",
+        "freq": 2,
+        "length": 2
+      },
+      {
+        "word": "图标",
+        "freq": 2,
+        "length": 2
+      },
+      {
+        "word": "承诺",
+        "freq": 2,
+        "length": 2
+      },
+      {
+        "word": "卡片",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "scene_description_phrase": [
+      {
+        "word": "背景",
+        "freq": 41,
+        "length": 2
+      },
+      {
+        "word": "场景",
+        "freq": 36,
+        "length": 2
+      },
+      {
+        "word": "空间",
+        "freq": 11,
+        "length": 2
+      },
+      {
+        "word": "棚拍",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "环境",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "霓虹",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "场景描述",
+        "freq": 6,
+        "length": 4
+      },
+      {
+        "word": "霓虹灯",
+        "freq": 6,
+        "length": 3
+      },
+      {
+        "word": "城市",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "街道",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "台面",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "背景简洁",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "户外场景",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "场景概念",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "清晨",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "室内",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "背景为浅灰棚",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "户外场景产品",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "室内空间设计",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "背景为简洁",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "背景干净",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "空间层次",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "棚拍环境",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "空间类型",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "背景为深",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "背景为纯",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "城市夜景",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "场景渲染",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "末日废土",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "棚拍光",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "word": "场景化",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "word": "空间感",
+        "freq": 2,
+        "length": 3
+      }
+    ],
+    "atmosphere_phrase": [
+      {
+        "word": "清晰",
+        "freq": 29,
+        "length": 2
+      },
+      {
+        "word": "真实",
+        "freq": 27,
+        "length": 2
+      },
+      {
+        "word": "光线",
+        "freq": 23,
+        "length": 2
+      },
+      {
+        "word": "简洁",
+        "freq": 12,
+        "length": 2
+      },
+      {
+        "word": "氛围",
+        "freq": 12,
+        "length": 2
+      },
+      {
+        "word": "现代",
+        "freq": 11,
+        "length": 2
+      },
+      {
+        "word": "干净",
+        "freq": 10,
+        "length": 2
+      },
+      {
+        "word": "高级",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "温暖",
+        "freq": 7,
+        "length": 2
+      },
+      {
+        "word": "自然光",
+        "freq": 5,
+        "length": 3
+      },
+      {
+        "word": "主光",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "克制",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "明亮",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "光线柔",
+        "freq": 4,
+        "length": 3
+      },
+      {
+        "word": "侧光",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "清晰可见",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "边缘光",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "word": "真实清",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "word": "科技",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "阳光",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "光影",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "治愈系绘本插",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "光线为戏剧性",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "高级棚拍",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "光线自然",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "真实清晰",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "现代塑料",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "氛围神秘",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "现代科技",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "专业",
+        "freq": 2,
+        "length": 2
+      },
+      {
+        "word": "暖色",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "costume_makeup_phrase": [
+      {
+        "word": "材质",
+        "freq": 24,
+        "length": 2
+      },
+      {
+        "word": "品牌",
+        "freq": 17,
+        "length": 2
+      },
+      {
+        "word": "标签",
+        "freq": 9,
+        "length": 2
+      },
+      {
+        "word": "包装",
+        "freq": 9,
+        "length": 2
+      },
+      {
+        "word": "商标",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "纹理",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "穿搭",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "玻璃",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "金属",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "材质真实",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "服装",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "材质特写主图",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "品牌形象海报",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "玻璃幕墙反射",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "材质微距",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "服装细节",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "标签朝",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "word": "包装盒",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "word": "品牌色",
+        "freq": 2,
+        "length": 3
+      },
+      {
+        "word": "配饰",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "param_key_phrase": [
+      {
+        "word": "渲染",
+        "freq": 19,
+        "length": 2
+      },
+      {
+        "word": "视角",
+        "freq": 9,
+        "length": 2
+      },
+      {
+        "word": "渲染图",
+        "freq": 7,
+        "length": 3
+      },
+      {
+        "word": "角度",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "构图遵循",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "构图强",
+        "freq": 2,
+        "length": 3
+      }
+    ],
+    "constraint_phrase": [
+      {
+        "word": "保留",
+        "freq": 10,
+        "length": 2
+      },
+      {
+        "word": "保持",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "保持产品",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "保持真实形状",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "保持产品结构",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "保留价格和按",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "保留干净",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "避免",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "photography_phrase": [
+      {
+        "word": "广角",
+        "freq": 10,
+        "length": 2
+      },
+      {
+        "word": "广角镜头",
+        "freq": 6,
+        "length": 4
+      },
+      {
+        "word": "微距",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "广角构图",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "长焦镜头",
+        "freq": 3,
+        "length": 4
+      },
+      {
+        "word": "三脚架稳定",
+        "freq": 2,
+        "length": 5
+      },
+      {
+        "word": "微距镜头",
+        "freq": 2,
+        "length": 4
+      }
+    ],
+    "style_genre_phrase": [
+      {
+        "word": "写实",
+        "freq": 8,
+        "length": 2
+      },
+      {
+        "word": "概念设定",
+        "freq": 6,
+        "length": 4
+      },
+      {
+        "word": "商业",
+        "freq": 6,
+        "length": 2
+      },
+      {
+        "word": "艺术",
+        "freq": 5,
+        "length": 2
+      },
+      {
+        "word": "概念设定图",
+        "freq": 4,
+        "length": 5
+      },
+      {
+        "word": "蒸汽朋克",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "写实人物",
+        "freq": 4,
+        "length": 4
+      },
+      {
+        "word": "街头",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "国风",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "动漫",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "科幻",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "奇幻",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "二次元",
+        "freq": 3,
+        "length": 3
+      },
+      {
+        "word": "卡通",
+        "freq": 3,
+        "length": 2
+      },
+      {
+        "word": "国风古装人像",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "水墨国风插画",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "二次元动漫场",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "动漫角色设计",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "科幻机甲设计",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "奇幻生物设计",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "写实人物角色",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "街头小吃摄影",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "极简建筑摄影",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "赛博朋克场景",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "蒸汽朋克场景",
+        "freq": 2,
+        "length": 6
+      },
+      {
+        "word": "伦勃朗光",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "街头人像",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "商业插画",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "维多利亚",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "卡通角色",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "科幻场景",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "奇幻世界",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "扁平",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "emotion_phrase": [
+      {
+        "word": "表情",
+        "freq": 4,
+        "length": 2
+      },
+      {
+        "word": "眼神",
+        "freq": 3,
+        "length": 2
+      }
+    ],
+    "tech_param_phrase": [
+      {
+        "word": "色调为铜",
+        "freq": 2,
+        "length": 4
+      },
+      {
+        "word": "画幅",
+        "freq": 2,
+        "length": 2
+      }
+    ],
+    "character_action_phrase": [
+      {
+        "word": "姿势",
+        "freq": 2,
+        "length": 2
+      },
+      {
+        "word": "手持",
+        "freq": 2,
+        "length": 2
+      }
+    ]
+  },
+  "unclassified": [
+    {
+      "word": "生成",
+      "freq": 91,
+      "length": 2
+    },
+    {
+      "word": "生成一",
+      "freq": 80,
+      "length": 3
+    },
+    {
+      "word": "添加",
+      "freq": 65,
+      "length": 2
+    },
+    {
+      "word": "主体",
+      "freq": 52,
+      "length": 2
+    },
+    {
+      "word": "文字",
+      "freq": 43,
+      "length": 2
+    },
+    {
+      "word": "描述",
+      "freq": 35,
+      "length": 2
+    },
+    {
+      "word": "摄影",
+      "freq": 33,
+      "length": 2
+    },
+    {
+      "word": "主题",
+      "freq": 32,
+      "length": 2
+    },
+    {
+      "word": "名称",
+      "freq": 31,
+      "length": 2
+    },
+    {
+      "word": "采用",
+      "freq": 31,
+      "length": 2
+    },
+    {
+      "word": "人物",
+      "freq": 29,
+      "length": 2
+    },
+    {
+      "word": "自然",
+      "freq": 26,
+      "length": 2
+    },
+    {
+      "word": "品名称",
+      "freq": 25,
+      "length": 3
+    },
+    {
+      "word": "色彩",
+      "freq": 22,
+      "length": 2
+    },
+    {
+      "word": "随机",
+      "freq": 21,
+      "length": 2
+    },
+    {
+      "word": "元素",
+      "freq": 20,
+      "length": 2
+    },
+    {
+      "word": "角色",
+      "freq": 19,
+      "length": 2
+    },
+    {
+      "word": "设计",
+      "freq": 18,
+      "length": 2
+    },
+    {
+      "word": "风格",
+      "freq": 18,
+      "length": 2
+    },
+    {
+      "word": "建筑",
+      "freq": 17,
+      "length": 2
+    },
+    {
+      "word": "对比",
+      "freq": 16,
+      "length": 2
+    },
+    {
+      "word": "摄影图",
+      "freq": 15,
+      "length": 3
+    },
+    {
+      "word": "提示词",
+      "freq": 13,
+      "length": 3
+    },
+    {
+      "word": "概念",
+      "freq": 12,
+      "length": 2
+    },
+    {
+      "word": "小红书",
+      "freq": 11,
+      "length": 3
+    },
+    {
+      "word": "广告",
+      "freq": 11,
+      "length": 2
+    },
+    {
+      "word": "电商",
+      "freq": 11,
+      "length": 2
+    },
+    {
+      "word": "品摄影",
+      "freq": 10,
+      "length": 3
+    },
+    {
+      "word": "过度",
+      "freq": 10,
+      "length": 2
+    },
+    {
+      "word": "细节",
+      "freq": 10,
+      "length": 2
+    },
+    {
+      "word": "区域",
+      "freq": 10,
+      "length": 2
+    },
+    {
+      "word": "插画",
+      "freq": 10,
+      "length": 2
+    },
+    {
+      "word": "颜色",
+      "freq": 9,
+      "length": 2
+    },
+    {
+      "word": "阴影",
+      "freq": 9,
+      "length": 2
+    },
+    {
+      "word": "整体",
+      "freq": 9,
+      "length": 2
+    },
+    {
+      "word": "设定",
+      "freq": 9,
+      "length": 2
+    },
+    {
+      "word": "随机文字",
+      "freq": 8,
+      "length": 4
+    },
+    {
+      "word": "展示",
+      "freq": 8,
+      "length": 2
+    },
+    {
+      "word": "活动",
+      "freq": 8,
+      "length": 2
+    },
+    {
+      "word": "人像",
+      "freq": 8,
+      "length": 2
+    },
+    {
+      "word": "加人",
+      "freq": 8,
+      "length": 2
+    },
+    {
+      "word": "添加随机",
+      "freq": 7,
+      "length": 4
+    },
+    {
+      "word": "品摄影图",
+      "freq": 7,
+      "length": 4
+    },
+    {
+      "word": "添加人",
+      "freq": 7,
+      "length": 3
+    },
+    {
+      "word": "边缘",
+      "freq": 7,
+      "length": 2
+    },
+    {
+      "word": "清楚",
+      "freq": 7,
+      "length": 2
+    },
+    {
+      "word": "蒸汽",
+      "freq": 7,
+      "length": 2
+    },
+    {
+      "word": "占画面",
+      "freq": 6,
+      "length": 3
+    },
+    {
+      "word": "适合",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "食物",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "多余",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "复杂",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "效果",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "小字",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "包含",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "朋克",
+      "freq": 6,
+      "length": 2
+    },
+    {
+      "word": "人物剪影",
+      "freq": 5,
+      "length": 4
+    },
+    {
+      "word": "添加人物",
+      "freq": 5,
+      "length": 4
+    },
+    {
+      "word": "细节清",
+      "freq": 5,
+      "length": 3
+    },
+    {
+      "word": "物描述",
+      "freq": 5,
+      "length": 3
+    },
+    {
+      "word": "色彩饱",
+      "freq": 5,
+      "length": 3
+    },
+    {
+      "word": "视点位",
+      "freq": 5,
+      "length": 3
+    },
+    {
+      "word": "形状",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "结构",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "灯光",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "浅色",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "顶部",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "渐变",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "信息",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "具体",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "拍摄",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "皮肤",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "虚化",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "人工",
+      "freq": 5,
+      "length": 2
+    },
+    {
+      "word": "生成一张产品",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "word": "生成一张电商",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "word": "生成一张小红",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "word": "成一张小红书",
+      "freq": 4,
+      "length": 6
+    },
+    {
+      "word": "摄影提示词",
+      "freq": 4,
+      "length": 5
+    },
+    {
+      "word": "位于画面",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "电商主图",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "广告海报",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "生成具体",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "人物描述",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "主题描述",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "角色描述",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "建筑外观",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "角色设计",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "设计渲染",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "采用广角",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "朋克场景",
+      "freq": 4,
+      "length": 4
+    },
+    {
+      "word": "浅景深",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "边缘清",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "短标题",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "主视觉",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "添加现",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "高对比",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "低角度",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "设计图",
+      "freq": 4,
+      "length": 3
+    },
+    {
+      "word": "完整",
+      "freq": 4,
+      "length": 2
+    }
+  ]
+}

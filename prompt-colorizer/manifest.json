@@ -1,0 +1,9 @@
+{
+  "id": "prompt-colorizer",
+  "name": "Prompt Colorizer",
+  "version": "2.7.0",
+  "minAppVersion": "1.5.0",
+  "description": "根据 Markdown 文件类型和内容模式自动着色，优化 AI 提示词的编写与展示体验。",
+  "author": "芝世",
+  "isDesktopOnly": false
+}
