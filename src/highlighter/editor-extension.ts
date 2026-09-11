@@ -33,6 +33,68 @@ import {
   overlapsCustomColor,
 } from './custom-text-colors';
 import { CSS_TO_KEY } from './rule-key-map';
+import { VOCAB_CLASS_TO_TOKEN, TOKEN_GROUP_BY_ID } from '../rule-engine/vocab-tokens';
+
+/**
+ * 匹配结果去重：同 from 区间保留优先级最高的匹配
+ * 自定义词汇层可能与主匹配/词典层产生同区间重叠
+ */
+function dedupeMatches(matches: RuleMatchResult[]): RuleMatchResult[] {
+  const sorted = [...matches].sort((a, b) => a.from - b.from || b.priority - a.priority);
+  const result: RuleMatchResult[] = [];
+  let lastTo = -1;
+  for (const m of sorted) {
+    if (m.from < lastTo) continue; // 与前一个区间重叠，跳过
+    result.push(m);
+    lastTo = m.to;
+  }
+  return result;
+}
+
+/**
+ * 匹配用户追加的自定义词汇（vocabCustomWords）
+ * 生成与该令牌组主 cssClass 同类的匹配结果，参与后续合并与过滤
+ */
+function matchVocabCustomWords(
+  text: string,
+  settings: PromptColorizerSettings
+): RuleMatchResult[] {
+  const customWords = settings.vocabCustomWords;
+  if (!customWords) return [];
+
+  const results: RuleMatchResult[] = [];
+  for (const [tokenId, words] of Object.entries(customWords)) {
+    if (!words || words.length === 0) continue;
+    const group = TOKEN_GROUP_BY_ID[tokenId];
+    if (!group) continue;
+    const cssClass = group.cssClasses[0];
+
+    const escaped = words
+      .filter((w) => w.trim().length > 0)
+      .map((w) => w.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .sort((a, b) => b.length - a.length);
+    if (escaped.length === 0) continue;
+
+    const hasChinese = words.some((w) => /[\u4e00-\u9fff]/.test(w));
+    const regex = hasChinese
+      ? new RegExp(`(${escaped.join('|')})`, 'gi')
+      : new RegExp(`\\b(${escaped.join('|')})\\b`, 'gi');
+
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(text)) !== null) {
+      if (m[1].length === 0) break;
+      results.push({
+        from: m.index,
+        to: m.index + m[1].length,
+        cssClass,
+        priority: 90,
+        block: false,
+        ruleId: `vocab-custom-${tokenId}`,
+      });
+    }
+  }
+  return results.sort((a, b) => a.from - b.from);
+}
 
 /**
  * 扫描单个空隙中的未着色中文段，对每个连续中文段调用组合规则
@@ -217,6 +279,100 @@ function applyCombinationRulesToUnmatched(
 }
 
 /**
+ * 收集文本的所有着色匹配结果（主匹配 + 组合规则 + 自定义文本颜色）
+ * 与编辑器高亮使用完全相同的匹配逻辑，供颜色导图面板等复用
+ * 包作用域（v5）从 matcher 读取：ruleIdScope 过滤 DSL 规则，tokenIdScope 过滤自定义令牌
+ *
+ * @param text 文档全文
+ * @param matcher 规则匹配器
+ * @param settings 插件设置
+ * @returns 过滤后的所有匹配结果（按 from 升序）
+ */
+export function collectAllMatches(
+  text: string,
+  matcher: RuleMatcher | null,
+  settings: PromptColorizerSettings
+): RuleMatchResult[] {
+  if (!matcher) return [];
+
+  // 构建启用的规则 ID 集合
+  let enabledIds: Set<string> | null = null;
+  if (settings.enabledRuleIds && settings.enabledRuleIds.length > 0) {
+    enabledIds = new Set(settings.enabledRuleIds);
+  }
+
+  // 设置上下文和词典开关
+  matcher.setContextEnabled(settings.contextSemanticEnabled);
+  matcher.setLexiconEnabled(settings.lexiconEnabled);
+
+  // 执行主匹配（patterns + lexicons，已按 from 升序、去重；包规则作用域在 matcher 内部生效）
+  const matches = matcher.match(text, enabledIds);
+
+  // 组合规则补充识别
+  const comboMatches = applyCombinationRulesToUnmatched(text, matches, matcher);
+
+  // 自定义文本颜色匹配（优先级最高，覆盖 DSL 规则；包作用域下仅包内引用的令牌参与）
+  const tokenScope = matcher.getTokenIdScope();
+  let tokenColors = settings.customTextColors ?? [];
+  if (tokenScope) {
+    tokenColors = tokenColors.filter((c) => tokenScope.has(c.id));
+  }
+  const customMatches = matchCustomTextColors(
+    text,
+    tokenColors,
+    settings.customTextColorsEnabled !== false
+  );
+
+  // 自定义词汇匹配（用户追加到令牌组的词汇，词级匹配优先于组合规则补充层）
+  const vocabCustomMatches = matchVocabCustomWords(text, settings);
+
+  // 合并所有匹配结果
+  let allMatches: RuleMatchResult[];
+  if (customMatches.length > 0) {
+    const filteredMatches = matches.filter(
+      (m) => !overlapsCustomColor(m.from, m.to, customMatches)
+    );
+    const filteredCombo = comboMatches.filter(
+      (m) => !overlapsCustomColor(m.from, m.to, customMatches)
+    );
+    allMatches = [...filteredMatches, ...filteredCombo, ...customMatches, ...vocabCustomMatches].sort(
+      (a, b) => a.from - b.from
+    );
+  } else if (comboMatches.length > 0 || vocabCustomMatches.length > 0) {
+    allMatches = [...matches, ...comboMatches, ...vocabCustomMatches].sort(
+      (a, b) => a.from - b.from
+    );
+  } else {
+    allMatches = matches;
+  }
+
+  // 去重：同区间保留高优先级（vocabCustom priority 90 高于组合层 0，低于词典层）
+  allMatches = dedupeMatches(allMatches);
+
+  // 按 UI 开关过滤（词汇令牌开关优先，其次符号类规则开关）
+  return filterMatchesByToggles(allMatches, settings);
+}
+
+/**
+ * 按设置开关过滤匹配结果（词汇令牌开关 + 符号类规则开关）
+ * 编辑器模式与阅读模式共用，确保两处开关行为一致
+ */
+export function filterMatchesByToggles(
+  matches: RuleMatchResult[],
+  settings: PromptColorizerSettings
+): RuleMatchResult[] {
+  return matches.filter((m) => {
+    const tokenId = VOCAB_CLASS_TO_TOKEN[m.cssClass];
+    if (tokenId) {
+      return settings.vocabTokenEnabled?.[tokenId] ?? true;
+    }
+    const settingKey = CSS_TO_KEY[m.cssClass];
+    if (!settingKey) return true;
+    return (settings as any)[settingKey] !== false;
+  });
+}
+
+/**
  * 将匹配结果转换为 CodeMirror 装饰
  * @param view 编辑器视图
  * @param matcher 规则匹配器
@@ -235,59 +391,7 @@ function buildDecorations(
   }
 
   const text = view.state.doc.toString();
-
-  // 构建启用的规则 ID 集合
-  let enabledIds: Set<string> | null = null;
-  if (settings.enabledRuleIds && settings.enabledRuleIds.length > 0) {
-    enabledIds = new Set(settings.enabledRuleIds);
-  }
-
-  // 设置上下文和词典开关
-  matcher.setContextEnabled(settings.contextSemanticEnabled);
-  matcher.setLexiconEnabled(settings.lexiconEnabled);
-
-  // 执行主匹配（patterns + lexicons，已按 from 升序、去重）
-  const matches = matcher.match(text, enabledIds);
-
-  // 组合规则补充识别：对未被 patterns/lexicons 覆盖的中文段应用结构化判断
-  // 仅处理主匹配遗留空隙中的连续中文段，不与已着色段重叠
-  const comboMatches = applyCombinationRulesToUnmatched(text, matches, matcher);
-
-  // 自定义文本颜色匹配（优先级最高，覆盖 DSL 规则；不写入 md 文件）
-  // 在内存中按文本内容匹配，颜色数据仅保存在插件本地
-  const customMatches = matchCustomTextColors(
-    text,
-    settings.customTextColors ?? [],
-    settings.customTextColorsEnabled !== false
-  );
-
-  // 合并所有匹配结果
-  // - 自定义颜色区间与 DSL/组合规则区间重叠时，保留自定义颜色（优先级最高）
-  // - 过滤掉与自定义颜色重叠的 DSL/组合规则匹配，避免 RangeSetBuilder 装饰冲突
-  let allMatches: RuleMatchResult[];
-  if (customMatches.length > 0) {
-    const filteredMatches = matches.filter(
-      (m) => !overlapsCustomColor(m.from, m.to, customMatches)
-    );
-    const filteredCombo = comboMatches.filter(
-      (m) => !overlapsCustomColor(m.from, m.to, customMatches)
-    );
-    allMatches = [...filteredMatches, ...filteredCombo, ...customMatches].sort(
-      (a, b) => a.from - b.from
-    );
-  } else if (comboMatches.length > 0) {
-    allMatches = [...matches, ...comboMatches].sort((a, b) => a.from - b.from);
-  } else {
-    allMatches = matches;
-  }
-
-  // 按 UI 开关过滤:对应开关关闭的规则不着色(v3 修复)
-  // 无对应开关的规则(如组合规则补充层、自定义文本颜色)不过滤
-  allMatches = allMatches.filter((m) => {
-    const settingKey = CSS_TO_KEY[m.cssClass];
-    if (!settingKey) return true;
-    return (settings as any)[settingKey] !== false;
-  });
+  const allMatches = collectAllMatches(text, matcher, settings);
 
   // 装饰必须按 from 升序添加，否则 RangeSetBuilder 会抛出异常
   for (const match of allMatches) {
@@ -311,8 +415,15 @@ function buildDecorations(
           );
         }
       } else {
-        // 标记装饰
-        builder.add(from, to, Decoration.mark({ class: match.cssClass }));
+        // 标记装饰（资源引用附带序号角标数据）
+        builder.add(
+          from,
+          to,
+          Decoration.mark({
+            class: match.cssClass,
+            attributes: match.refIndex ? { 'data-ref': match.refIndex } : undefined,
+          })
+        );
       }
     } catch {
       // 跳过无效范围（行号越界等）

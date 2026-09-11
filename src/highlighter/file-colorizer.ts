@@ -116,10 +116,10 @@ export function getFileTypeColor(
 /**
  * 获取文件类型的简短标签文字
  */
-function getTypeLabel(type: FileType, lang: 'zh' | 'en'): string {
+function getTypeLabel(type: FileType, _lang: 'zh' | 'en'): string {
   const labels = FILE_TYPE_SHORT_LABELS[type];
   if (!labels) return '';
-  return lang === 'zh' ? labels.zh : labels.en;
+  return labels.zh ?? labels.en ?? '';
 }
 
 /**
@@ -152,8 +152,15 @@ export function colorizeFileExplorer(
     const fileItems = container.querySelectorAll('.tree-item-self');
     fileItems.forEach((item) => {
       const itemEl = item as HTMLElement;
-      // 检查是否已处理
-      if (itemEl.dataset.pcProcessed === 'true') return;
+      // 幂等检查：已标记且未失效才跳过
+      // Obsidian 重渲染会丢弃注入的标签但保留 dataset 标记，
+      // 此时判定为失效，清理残留后重新着色
+      const processed = itemEl.dataset.pcProcessed === 'true';
+      const markerAlive = !!itemEl.querySelector('.pc-file-type-badge');
+      if (processed && markerAlive) return;
+      itemEl
+        .querySelectorAll('.pc-file-type-badge')
+        .forEach((n) => n.remove());
 
       // 获取文件路径(优先使用 data-path 属性精确匹配,避免同名文件误命中)
       // Obsidian 文件浏览器项的父级 .tree-item 元素含 data-path 属性,值为文件相对路径
@@ -187,23 +194,9 @@ export function colorizeFileExplorer(
           itemEl.dataset.pcProcessed = 'true';
           itemEl.dataset.pcType = fileType;
 
-          // 获取 fileLink 用于插入圆点和标签
+          // 获取 fileLink 用于插入标签
           const fileLink = itemEl.querySelector('.tree-item-inner');
           if (!fileLink) return;
-
-          // 添加颜色圆点
-          if (settings.showColorDot) {
-            const dot = itemEl.createEl('span', {
-              cls: 'pc-file-dot',
-            });
-            dot.style.width = `${settings.colorDotSize}px`;
-            dot.style.height = `${settings.colorDotSize}px`;
-            dot.style.backgroundColor = colorConfig.color;
-            dot.style.setProperty('--pc-dot-color', colorConfig.color);
-            dot.style.flexShrink = '0';
-            // 插入到文件名前
-            fileLink.parentElement?.insertBefore(dot, fileLink);
-          }
 
           // 添加文件类型标签（药丸样式）
           const typeLabel = getTypeLabel(fileType, settings.language);
@@ -217,11 +210,6 @@ export function colorizeFileExplorer(
             badge.style.border = `1px solid ${hexToRgba(colorConfig.color, 0.15)}`;
             // 插入到文件名后
             fileLink.parentElement?.insertBefore(badge, fileLink.nextSibling);
-          }
-
-          // 修改文件名颜色
-          if (settings.modifyFileNameColor) {
-            (fileLink as HTMLElement).style.color = colorConfig.color;
           }
         }
       }
@@ -239,21 +227,14 @@ export function clearFileExplorerColors(app: App): void {
     const container = leaf.view.containerEl;
     if (!container) continue;
 
-    // 移除颜色圆点
-    container.querySelectorAll('.pc-file-dot').forEach((dot) => dot.remove());
-
     // 移除文件类型标签
     container.querySelectorAll('.pc-file-type-badge').forEach((badge) => badge.remove());
 
-    // 移除文件名颜色
+    // 移除残留标记
     container.querySelectorAll('[data-pc-processed]').forEach((item) => {
       const itemEl = item as HTMLElement;
       itemEl.removeAttribute('data-pc-processed');
       itemEl.removeAttribute('data-pc-type');
-      const fileLink = itemEl.querySelector('.tree-item-inner');
-      if (fileLink) {
-        (fileLink as HTMLElement).style.color = '';
-      }
     });
   }
 }
@@ -287,5 +268,66 @@ export function colorizeTabTitle(
         indicator.style.borderBottomColor = colorConfig.color;
       }
     }
+  }
+}
+
+// ============================================================
+// 文件浏览器重渲染观察者
+//
+// Obsidian 在展开/折叠文件夹、调整布局、异步渲染文件列表时会重建 DOM，
+// 注入的圆点与类型标签随之丢失；启动时单次着色也会漏掉尚未渲染的节点。
+// 这里通过 MutationObserver 在文件浏览器内容变化后防抖补着色。
+//
+// 收敛性：补着色本身会再触发一次 mutation，但此时所有项均已带标记，
+// colorizeFileExplorer 的幂等检查会直接跳过，不再产生 DOM 变更。
+// ============================================================
+
+const explorerObservers = new Set<MutationObserver>();
+let explorerRedrawTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 停止并清理所有文件浏览器观察者及待执行的补着色回调 */
+export function stopFileExplorerObservers(): void {
+  for (const obs of explorerObservers) {
+    obs.disconnect();
+  }
+  explorerObservers.clear();
+  if (explorerRedrawTimer !== null) {
+    clearTimeout(explorerRedrawTimer);
+    explorerRedrawTimer = null;
+  }
+}
+
+/**
+ * 监听文件浏览器重渲染，内容变化后防抖触发补着色
+ * @param app 应用实例
+ * @param onRedraw 补着色回调（内部不应清除已有标记，靠幂等检查避免重复）
+ * @param delay 防抖延迟（毫秒）
+ */
+export function observeFileExplorerRedraw(
+  app: App,
+  onRedraw: () => void,
+  delay = 80
+): void {
+  stopFileExplorerObservers();
+
+  const schedule = () => {
+    if (explorerRedrawTimer !== null) clearTimeout(explorerRedrawTimer);
+    explorerRedrawTimer = setTimeout(() => {
+      explorerRedrawTimer = null;
+      onRedraw();
+    }, delay);
+  };
+
+  for (const leaf of app.workspace.getLeavesOfType('file-explorer')) {
+    const container = leaf.view.containerEl;
+    if (!container) continue;
+    // 优先监听文件列表容器，缺失时降级为整个视图容器
+    const target =
+      (container.querySelector('.nav-files-container') as HTMLElement | null) ??
+      container;
+
+    const obs = new MutationObserver(() => schedule());
+    obs.observe(target, { childList: true, subtree: true });
+    explorerObservers.add(obs);
   }
 }

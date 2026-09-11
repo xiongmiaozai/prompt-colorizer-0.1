@@ -2,6 +2,44 @@
 
 本文件记录提示词 DSL 高亮规则库的所有版本变更，遵循 [Keep a Changelog](https://keepachangelog.com/) 简化版格式，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [v2.8.0] - 2026-09-03
+
+### Changed
+- `04-theme-color.yaml` 颜色令牌收敛：**37 个 → 16 个**（基础 10 + 扩展 5 + 多模态 1），解决"颜色过多"问题，降低正文着色的视觉噪音
+- `styleRules` 区所有已删令牌引用按映射表批量替换（约 80 处），着色语义不变
+
+### Removed
+- 删除 21 个冗余/近似色令牌，按同色相合并：
+
+| 已删除令牌 | 合并到 | 说明 |
+|---|---|---|
+| violet、agent、reference | purple | 深紫系（violet/agent 色值相同） |
+| indigodeep、runway | indigo | 靛蓝系（runway 色值与 indigo 相同） |
+| blue | info | 链接蓝并入信息蓝 |
+| slategray | slate | 中灰并入石板灰 |
+| slatelight | paren | 浅灰并入注释灰 |
+| sky、teal、gen3d、comfyui、module | cyan | 青色系 |
+| rose、segment | danger | 红色系 |
+| lime、green | success | 绿色系 |
+| fuchsia | music | 品红系（色值相同） |
+| avatar | pink | 粉色系 |
+| tts | orange | 橙色系 |
+| excel | emerald | 翠绿系（色值相同） |
+
+### 保留令牌清单（16 个）
+基础 10：`danger` `success` `warning` `info` `purple` `cyan` `pink` `amber` `orange` `paren`
+扩展 5：`indigo` `emerald` `slate` `darkslate` `yellow`
+多模态 1：`music`
+
+### Migration
+- **下游插件需提供旧令牌设置迁移**：用户设置中的 `customColors`（键 `--dsl-{旧令牌}`）与 `tokenEnabled`（键 `{旧令牌}`）应按上表映射到新令牌名，避免用户自定义颜色/开关状态丢失
+- **`--pc-*` 别名层无需改动**：styles.css 的 `--pc-*` 变量仅引用基础 10 令牌，全部保留
+- **styleRules 类名不变**：仅令牌引用变更，`dsl-*` CSS 类名完整保留，规则匹配行为不受影响
+- `version.json` 版本号从 `2.7.0` 升级到 `2.8.0`（MINOR 升级，含设置迁移项）
+
+### 背景
+v2.3.0 ~ v2.4.0 期间为行业词典与多模态扩展快速堆叠了 27 个新令牌，导致：① 设置面板令牌卡片区过载（37 个卡片）；② 正文全量启用时一屏出现十余种颜色，可读性下降；③ 21 个令牌与基础色系色相重叠（如 4 个灰板灰、3 个青色系），语义区分度弱。本次收敛按"同色相合并"原则将令牌数压缩至 16 个，视觉分区能力通过色相 + 字重 + 透明度补偿保持。
+
 ## [v2.7.0] - 2026-07-24
 
 ### Added

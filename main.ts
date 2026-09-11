@@ -14,16 +14,18 @@
  * - 支持 Git 远程规则更新、本地缓存、内置规则三种模式
  */
 
-import { Plugin, WorkspaceLeaf, Notice, Editor, Menu, MarkdownView } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, Editor, Menu, MarkdownView, TFile } from 'obsidian';
 import { Extension } from '@codemirror/state';
 import type { PromptColorizerSettings, CustomTextColor } from './src/types';
 import { DEFAULT_SETTINGS, mergeSettings } from './src/settings/settings';
 import { PromptColorizerSettingTab } from './src/settings/setting-tab';
-import { createEditorExtension } from './src/highlighter/editor-extension';
+import { createEditorExtension, collectAllMatches } from './src/highlighter/editor-extension';
 import {
   colorizeFileExplorer,
   clearFileExplorerColors,
   colorizeTabTitle,
+  observeFileExplorerRedraw,
+  stopFileExplorerObservers,
 } from './src/highlighter/file-colorizer';
 import { createPostProcessor } from './src/reader/post-processor';
 import { setLanguage, t } from './src/utils/i18n';
@@ -36,10 +38,13 @@ import {
   hideColorPopover,
   addColorMenuItems,
 } from './src/ui/color-popover';
+import { ColorMapView, activateColorMapView, VIEW_TYPE_COLOR_MAP } from './src/ui/color-map-view';
 import {
   generateCustomTextColorsCss,
   findMatchingCustomColorIds,
 } from './src/highlighter/custom-text-colors';
+import { PackageManager } from './src/packages/package-manager';
+import { generatePackageOverrideCss } from './src/packages/package-override-css';
 import {
   exportFullSettings,
   exportCustomTextColors,
@@ -51,9 +56,18 @@ import { IntegrationManager } from './src/integrations';
 
 // 规则引擎模块
 import { RuleMatcher } from './src/rule-engine/matcher';
-import { compileRuleSet, loadBuiltinRules, generateStyleCss, generateColorVariables } from './src/rule-engine/rule-compiler';
+import { compileRuleSet, loadBuiltinRules, generateStyleCss, generateColorVariables, generateColorBlindAssistCss } from './src/rule-engine/rule-compiler';
 import { CSS_TO_KEY } from './src/highlighter/rule-key-map';
-import type { RuleSet, StyleRule, ColorToken } from './src/rule-engine/types';
+import type { RuleSet, StyleRule, ColorToken, RuleMatchResult } from './src/rule-engine/types';
+import type { LoadedPackage } from './src/types';
+import {
+  VOCAB_TOKEN_GROUPS,
+  VOCAB_CATEGORIES,
+  VOCAB_CLASS_TO_TOKEN,
+  TOKEN_TO_CATEGORY,
+  getVocabWords,
+} from './src/rule-engine/vocab-tokens';
+import type { VocabTokenInfo, VocabCategoryInfo } from './src/rule-engine/vocab-tokens';
 import { LocalCache } from './src/cache/local-cache';
 import { fetchRemoteVersion, fetchRuleFilesWithReport, compareVersions, calculateHash, parseRuleCategories, countLexiconTerms } from './src/fetcher/git-fetch';
 import type { RemoteVersionInfo, LocalVersionInfo, PullReportData } from './src/rule-engine/types';
@@ -67,7 +81,7 @@ export default class PromptColorizer extends Plugin {
   /** 本地缓存管理器 */
   private cache: LocalCache;
   /** 当前规则集 */
-  private currentRuleSet: RuleSet | null = null;
+  currentRuleSet: RuleSet | null = null;
   /** 自动更新定时器 ID */
   private autoUpdateTimerId: number | null = null;
   /** 动态注入的 DSL 样式元素 */
@@ -76,6 +90,14 @@ export default class PromptColorizer extends Plugin {
   private dslColorVarEl: HTMLStyleElement | null = null;
   /** 动态注入的自定义文本颜色样式元素（由 customTextColors 生成） */
   private customTextStyleEl: HTMLStyleElement | null = null;
+  /** 动态注入的词汇令牌颜色覆盖样式元素（由 vocabColors 生成） */
+  private vocabColorStyleEl: HTMLStyleElement | null = null;
+  /** 包管理器（v5 包管理模块） */
+  pkgManager: PackageManager;
+  /** 已加载包缓存（导图面板与渲染覆盖层共用） */
+  loadedPackages: LoadedPackage[] = [];
+  /** 动态注入的包样式覆盖层元素（由启用包 tokenOverrides/ruleOverrides 合并生成） */
+  private pkgOverrideStyleEl: HTMLStyleElement | null = null;
   /** 插件联动管理器(P1-7 Templater/Dataview 集成) */
   private integrationManager: IntegrationManager | null = null;
 
@@ -95,12 +117,22 @@ export default class PromptColorizer extends Plugin {
     // 3.6 应用自定义文本颜色样式
     this.applyCustomTextColorsStyles();
 
+    // 3.7 应用词汇令牌颜色覆盖样式
+    this.applyVocabColorStyles();
+
     // 4. 初始化规则引擎
     this.matcher = new RuleMatcher();
     this.cache = new LocalCache(this.app, this.manifest.id);
 
     // 5. 加载规则（同步优先加载内置规则，异步再更新）
     await this.initRules();
+
+    // 5.5 初始化包管理器：加载内置包 + 用户包，应用启用包样式覆盖层
+    this.pkgManager = new PackageManager(this.app, () => this.settings);
+    await this.reloadPackages();
+
+    // 5.6 首次迁移：现有令牌与规则整理为 main 汇总包（一次性）
+    await this.ensureMainPackage();
 
     // 6. 注册编辑器扩展（传入 matcher）
     this.editorExtensions = createEditorExtension(this.settings, this.matcher);
@@ -112,12 +144,23 @@ export default class PromptColorizer extends Plugin {
     // 8. 注册设置面板
     this.addSettingTab(new PromptColorizerSettingTab(this.app, this));
 
+    // 8.5 注册颜色导图侧边栏视图
+    this.registerView(
+      VIEW_TYPE_COLOR_MAP,
+      (leaf) => new ColorMapView(leaf, this)
+    );
+
     // 9. 注册命令
     this.registerCommands();
 
     // 10. 注册 Ribbon 图标
     this.addRibbonIcon('palette', t('command.refresh'), () => {
       this.refreshAll();
+    });
+
+    // 10.5 注册颜色导图 Ribbon 图标
+    this.addRibbonIcon('map', t('colorMap.title'), () => {
+      activateColorMapView(this.app);
     });
 
     // 11. 注册事件
@@ -178,6 +221,9 @@ export default class PromptColorizer extends Plugin {
   }
 
   async onunload(): Promise<void> {
+    // 停止文件浏览器重渲染观察者
+    stopFileExplorerObservers();
+
     // 清理文件浏览器颜色
     clearFileExplorerColors(this.app);
 
@@ -211,6 +257,11 @@ export default class PromptColorizer extends Plugin {
     if (this.customTextStyleEl) {
       this.customTextStyleEl.remove();
       this.customTextStyleEl = null;
+    }
+    // 清理包样式覆盖层
+    if (this.pkgOverrideStyleEl) {
+      this.pkgOverrideStyleEl.remove();
+      this.pkgOverrideStyleEl = null;
     }
 
     // 清理浮动面板
@@ -253,6 +304,7 @@ export default class PromptColorizer extends Plugin {
 
     if (ruleSet) {
       this.currentRuleSet = ruleSet;
+      this.appendCustomRules();
       this.matcher.setRuleSet(ruleSet);
       this.applyDynamicColorVariables(ruleSet.colorTokens);
       this.applyDynamicStyles(ruleSet.styleRules, ruleSet.colorTokens);
@@ -260,27 +312,62 @@ export default class PromptColorizer extends Plugin {
   }
 
   /**
+   * 包管理模块（v5）：合并用户自定义规则到规则集。
+   * .stylepkg 导入的规则存 settings.customRules（id/regex/cssClass/priority/style），
+   * 在原规则集之上追加（不改动 YAML 本体与既有解析逻辑）。
+   */
+  appendCustomRules(): void {
+    const defs = this.settings.customRules ?? [];
+    if (!this.currentRuleSet || defs.length === 0) return;
+    for (const def of defs) {
+      if (!def?.id || !def.regex || !def.cssClass) continue;
+      // 跳过与既有规则重复的 ID（例如重启后重复追加）
+      if (this.currentRuleSet.rules.some((r) => r.id === def.id)) continue;
+      let regex: RegExp;
+      try {
+        regex = new RegExp(def.regex, def.flags ?? '');
+      } catch {
+        continue; // 正则非法的规则跳过，不阻塞
+      }
+      this.currentRuleSet.rules.push({
+        id: def.id,
+        regex,
+        cssClass: def.cssClass,
+        priority: def.priority ?? 20,
+        blockLevel: false,
+        captureGroup: def.captureGroup ?? 0,
+      });
+      if (def.style) {
+        // 样式合并进 styleRules（后导入覆盖同名键）
+        this.currentRuleSet.styleRules[def.cssClass] = {
+          ...(this.currentRuleSet.styleRules[def.cssClass] ?? {}),
+          ...def.style,
+        };
+      }
+    }
+  }
+
+  /**
    * 应用动态颜色变量
    * 从 YAML colors 区块生成 CSS 变量定义并注入到文档头部
-   * 支持明暗模式自动切换（浅色 :root / 深色 body.theme-dark）
-   * 注入后重新应用用户自定义颜色覆盖（优先级最高）
+   * v2.9：经由 applyDynamicColorVariablesWith 统一走色板合并链路
    * @param colorTokens 颜色令牌定义映射
    */
   private applyDynamicColorVariables(colorTokens: Record<string, ColorToken>): void {
-    // 移除旧的颜色变量样式
+    if (this.currentRuleSet) {
+      this.applyDynamicColorVariablesWith(colorTokens, this.currentRuleSet.styleRules);
+      return;
+    }
+    // 无规则集时仅注入变量（兜底）
     if (this.dslColorVarEl) {
       this.dslColorVarEl.remove();
     }
-
-    const css = generateColorVariables(colorTokens);
+    const css = generateColorVariables(colorTokens, this.settings.colorScheme, this.settings.tokenDeriveAlphas ?? {});
     if (!css) return;
-
     this.dslColorVarEl = document.createElement('style');
     this.dslColorVarEl.id = 'prompt-colorizer-color-vars';
     this.dslColorVarEl.textContent = css;
     document.head.appendChild(this.dslColorVarEl);
-
-    // 重新应用用户自定义颜色覆盖（优先级高于 YAML 定义的默认值）
     this.applyCustomColors();
   }
 
@@ -855,6 +942,15 @@ export default class PromptColorizer extends Plugin {
         }
       },
     });
+
+    // 打开颜色导图侧边栏面板
+    this.addCommand({
+      id: 'open-color-map-panel',
+      name: prefix + t('colorMap.openPanel'),
+      callback: () => {
+        activateColorMapView(this.app);
+      },
+    });
   }
 
   /**
@@ -902,6 +998,119 @@ export default class PromptColorizer extends Plugin {
   }
 
   // ============================================================
+  // 包管理模块（v5）
+  // ============================================================
+
+  /**
+   * 重新扫描加载全部包（内置 + 用户目录）并应用启用包样式覆盖层。
+   * 供启动、导图操作（导入/删除/克隆/勾选变化）后调用。
+   */
+  async reloadPackages(): Promise<void> {
+    try {
+      const { packages } = await this.pkgManager.loadAll();
+      this.loadedPackages = packages;
+    } catch {
+      this.loadedPackages = [];
+    }
+    this.applyPackageScopes();
+    this.applyPackageOverrideStyles();
+  }
+
+  /**
+   * 同步包作用域到规则匹配器（v5 启用机制）：
+   * 启用任一包 → 仅包内引用的规则/令牌参与着色（∩ 全局开关）；
+   * 未启用任何包 → 作用域置空，回退全局开关（全部规则/令牌按原逻辑参与）。
+   * matcher 为编辑器/阅读/导图三链路共用实例，作用域自动全局生效。
+   */
+  applyPackageScopes(): void {
+    if (!this.matcher || !this.pkgManager) return;
+    const enabled = this.pkgManager.getEnabledPackages(this.loadedPackages);
+    if (enabled.length === 0) {
+      this.matcher.setRuleIdScope(null);
+      this.matcher.setTokenIdScope(null);
+      return;
+    }
+    const { tokenIds, ruleIds } = this.pkgManager.collectEnabledRefIds(enabled);
+    this.matcher.setRuleIdScope(ruleIds);
+    this.matcher.setTokenIdScope(tokenIds);
+  }
+
+  /**
+   * 首次迁移（v5）：将现有全部令牌与规则整理为 main 汇总包。
+   * 仅在未迁移过时执行一次（settings.mainPackageMigrated 标记），失败不阻塞启动。
+   */
+  private async ensureMainPackage(): Promise<void> {
+    if (this.settings.mainPackageMigrated) return;
+    // 双保险：settings 标记可能因 data.json 重置/换测试 vault 丢失，但 vault 的 packages/ 目录仍在。
+    // 已存在 main 汇总包则视为已迁移，避免重复创建 main_2/main_3。
+    const hasMainPkg = this.loadedPackages.some(
+      (p) => !p.isBuiltin && (p.dirName === 'main' || p.manifest?.usageTag === '汇总整理')
+    );
+    this.settings.mainPackageMigrated = true;
+    await this.saveSettings();
+    if (hasMainPkg) return;
+    try {
+      const hasTokens = (this.settings.customTextColors?.length ?? 0) > 0;
+      const hasRules = (this.currentRuleSet?.rules?.length ?? 0) > 0;
+      if (!hasTokens && !hasRules) return;
+      const { consolidateAllResourcesIntoMainPackage } = await import('./src/packages/package-actions');
+      await consolidateAllResourcesIntoMainPackage(this);
+    } catch {
+      // 整理失败不阻塞启动
+    }
+  }
+
+  /** 获取规则 ID → CSS 类名映射（从容则集推导，供覆盖层容错过滤） */
+  getRuleIdToCssClassMap(): Record<string, string> {
+    const map: Record<string, string> = {};
+    const rules = this.currentRuleSet?.rules ?? [];
+    for (const r of rules) {
+      if (r?.id && r?.cssClass) map[r.id] = r.cssClass;
+    }
+    return map;
+  }
+
+  /**
+   * 应用启用包样式覆盖层：
+   * 收集启用包引用 ID → 合并 tokenOverrides/ruleOverrides（按优先级自上而下）
+   * → 生成覆盖 CSS 注入。失效 ID 直接跳过，不阻塞渲染。
+   */
+  applyPackageOverrideStyles(): void {
+    if (this.pkgOverrideStyleEl) {
+      this.pkgOverrideStyleEl.remove();
+      this.pkgOverrideStyleEl = null;
+    }
+    if (!this.pkgManager) return;
+
+    const enabled = this.pkgManager.getEnabledPackages(this.loadedPackages);
+    if (enabled.length === 0) return;
+
+    const tokenOverrides = this.pkgManager.mergeTokenOverrides(enabled);
+    const ruleOverrides = this.pkgManager.mergeRuleOverrides(enabled);
+    if (Object.keys(tokenOverrides).length === 0 && Object.keys(ruleOverrides).length === 0) return;
+
+    // 容错：仅保留本体存在的资源
+    const validTokenIds = new Set((this.settings.customTextColors ?? []).map((c) => c.id));
+    const ruleIdToCssClass = this.getRuleIdToCssClassMap();
+
+    const css = generatePackageOverrideCss(tokenOverrides, ruleOverrides, validTokenIds, ruleIdToCssClass);
+    if (!css) return;
+
+    this.pkgOverrideStyleEl = document.createElement('style');
+    this.pkgOverrideStyleEl.id = 'prompt-colorizer-package-overrides';
+    this.pkgOverrideStyleEl.textContent = css;
+    document.head.appendChild(this.pkgOverrideStyleEl);
+  }
+
+  /** 当前启用包的引用 ID 集合（叠加合并去重；导图与扫描模块共用） */
+  getEnabledPackageRefIds(): { tokenIds: Set<string>; ruleIds: Set<string> } {
+    if (!this.pkgManager) return { tokenIds: new Set(), ruleIds: new Set() };
+    return this.pkgManager.collectEnabledRefIds(
+      this.pkgManager.getEnabledPackages(this.loadedPackages)
+    );
+  }
+
+  // ============================================================
   // 自定义文本颜色管理
   // ============================================================
 
@@ -927,6 +1136,9 @@ export default class PromptColorizer extends Plugin {
     this.customTextStyleEl.id = 'prompt-colorizer-custom-text-colors';
     this.customTextStyleEl.textContent = css;
     document.head.appendChild(this.customTextStyleEl);
+
+    // v2.10：广播自定义颜色变化（颜色导图等面板监听刷新）
+    this.app.workspace.trigger('prompt-colorizer:custom-colors-changed');
   }
 
   /**
@@ -954,8 +1166,14 @@ export default class PromptColorizer extends Plugin {
         if (existing) {
           // 更新现有规则
           existing.color = result.color;
+          existing.color2 = result.color2 || '';
+          existing.gradientStops = result.gradientStops.map((s) => ({ ...s }));
+          existing.gradientAngle = result.gradientAngle;
           existing.caseSensitive = result.caseSensitive;
           existing.wholeWord = result.wholeWord;
+          existing.effect = result.effect;
+          existing.effects = [...result.effects];
+          existing.effectParams = result.effectParams ?? {};
           existing.enabled = true;
         } else {
           // 新建规则
@@ -1052,8 +1270,14 @@ export default class PromptColorizer extends Plugin {
       (result) => {
         item.text = result.text;
         item.color = result.color;
+        item.color2 = result.color2 || '';
+        item.gradientStops = result.gradientStops.map((s) => ({ ...s }));
+        item.gradientAngle = result.gradientAngle;
         item.caseSensitive = result.caseSensitive;
         item.wholeWord = result.wholeWord;
+        item.effect = result.effect;
+        item.effects = [...result.effects];
+        item.effectParams = result.effectParams ?? {};
 
         this.saveSettings().then(() => {
           this.applyCustomTextColorsStyles();
@@ -1166,17 +1390,22 @@ export default class PromptColorizer extends Plugin {
     existing: CustomTextColor | null
   ): Promise<void> {
     if (existing) {
-      // 更新现有规则的颜色
+      // 更新现有规则的颜色（效果组合保持不变）
       existing.color = color;
     } else {
-      // 新建规则（使用默认匹配选项）
+      // 新建规则（使用默认匹配选项；无效果组合）
       const newItem: CustomTextColor = {
         id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
         text,
         color,
+        color2: '',
+        gradientStops: [],
+        gradientAngle: 135,
         enabled: true,
         caseSensitive: false,
         wholeWord: false,
+        effect: 'none',
+        effects: [],
       };
       this.settings.customTextColors.push(newItem);
     }
@@ -1195,7 +1424,46 @@ export default class PromptColorizer extends Plugin {
   // ============================================================
 
   /**
+   * 解析当前生效的令牌集（含色板预设覆盖）
+   * 优先级：per-note frontmatter theme-palette > 文件夹色板映射（最长路径优先）> 全局 palettePreset > YAML 默认 colors
+   */
+  private resolveActiveColorTokens(): Record<string, ColorToken> {
+    const base = this.currentRuleSet?.colorTokens ?? {};
+    const palettes = this.currentRuleSet?.palettes ?? {};
+
+    let presetName = this.settings.palettePreset || '';
+
+    // 文件夹色板映射（项 10）：当前激活文件所在文件夹匹配映射，最长路径优先
+    if (this.settings.folderPalettesEnabled && this.settings.folderPalettes?.length) {
+      const activeFile = this.app.workspace.getActiveFile();
+      if (activeFile) {
+        const matches = this.settings.folderPalettes
+          .filter((fp) => activeFile.path.startsWith(fp.path + '/'))
+          .sort((a, b) => b.path.length - a.path.length);
+        const hit = matches.find((fp) => palettes[fp.palette]);
+        if (hit) presetName = hit.palette;
+      }
+    }
+
+    // per-note frontmatter（项 6）：theme-palette: macaron 覆盖一切
+    const activeFile = this.app.workspace.getActiveFile();
+    if (activeFile && activeFile.extension === 'md') {
+      const cache = this.app.metadataCache.getFileCache(activeFile);
+      const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+      if (fm && typeof fm['theme-palette'] === 'string' && fm['theme-palette']) {
+        presetName = fm['theme-palette'];
+      }
+    }
+
+    if (!presetName || !palettes[presetName]) return base;
+
+    // 色板合并：预设覆盖同名令牌，未覆盖令牌沿用默认
+    return { ...base, ...palettes[presetName].tokens };
+  }
+
+  /**
    * 应用颜色模式
+   * v2.9：色板预设 / 衍生透明度 / 色盲辅助 / 文件夹色板 全部在此链路生效
    */
   applyColorMode(): void {
     document.body.removeClass('prompt-colorizer-light', 'prompt-colorizer-dark', 'pc-light', 'pc-dark');
@@ -1206,6 +1474,68 @@ export default class PromptColorizer extends Plugin {
       document.body.addClass('prompt-colorizer-dark', 'pc-dark');
     }
     // auto 模式不添加 class，CSS 中通过 @media 自动适配
+
+    // 配色方案/色板/透明度变化时重生成颜色变量和样式规则
+    if (this.currentRuleSet) {
+      const tokens = this.resolveActiveColorTokens();
+      this.applyDynamicColorVariablesWith(tokens, this.currentRuleSet.styleRules);
+    }
+
+    // 色盲辅助 class（项 7）：CSS 据此为红/绿系令牌追加冗余下划线
+    document.body.classList.toggle('pc-colorblind-assist', !!this.settings.colorBlindAssist);
+    this.applyColorBlindAssistStyles();
+  }
+
+  /** 色盲辅助样式元素 */
+  private colorBlindAssistEl: HTMLElement | null = null;
+
+  /**
+   * 注入/移除色盲辅助 CSS（项 7）
+   * 生成静态规则集，仅随开关变化重注
+   */
+  private applyColorBlindAssistStyles(): void {
+    if (this.colorBlindAssistEl) {
+      this.colorBlindAssistEl.remove();
+      this.colorBlindAssistEl = null;
+    }
+    if (!this.settings.colorBlindAssist) return;
+    const css = generateColorBlindAssistCss();
+    if (!css) return;
+    this.colorBlindAssistEl = document.createElement('style');
+    this.colorBlindAssistEl.id = 'prompt-colorizer-colorblind-assist';
+    this.colorBlindAssistEl.textContent = css;
+    document.head.appendChild(this.colorBlindAssistEl);
+  }
+
+  /**
+   * 带令牌参数的动态变量注入（applyColorMode 内部用）
+   * 与 applyDynamicColorVariables 的区别：直接接收已合并色板的令牌集
+   */
+  private applyDynamicColorVariablesWith(
+    colorTokens: Record<string, ColorToken>,
+    styleRules: Record<string, StyleRule>
+  ): void {
+    if (this.dslColorVarEl) {
+      this.dslColorVarEl.remove();
+    }
+
+    const css = generateColorVariables(
+      colorTokens,
+      this.settings.colorScheme,
+      this.settings.tokenDeriveAlphas ?? {}
+    );
+    if (css) {
+      this.dslColorVarEl = document.createElement('style');
+      this.dslColorVarEl.id = 'prompt-colorizer-color-vars';
+      this.dslColorVarEl.textContent = css;
+      document.head.appendChild(this.dslColorVarEl);
+    }
+
+    // 样式规则需用合并后的令牌集重新生成（令牌引用才能命中覆盖色）
+    this.applyDynamicStyles(styleRules, colorTokens);
+
+    // 重新应用用户自定义颜色覆盖（优先级最高）
+    this.applyCustomColors();
   }
 
   /**
@@ -1254,16 +1584,140 @@ export default class PromptColorizer extends Plugin {
     const styleRules = this.matcher.getStyleRules();
     const colorTokens = this.matcher.getColorTokens();
     this.applyDynamicStyles(styleRules, colorTokens);
+    this.applyVocabColorStyles();
+  }
+
+  /**
+   * 获取词汇令牌列表（颜色管理 Tab 渲染用）
+   * 每个令牌 = 语义领域词汇分组，含名称/描述/颜色/启用状态/词汇量
+   */
+  getVocabTokens(): VocabTokenInfo[] {
+    const customWords = this.settings.vocabCustomWords ?? {};
+    return VOCAB_TOKEN_GROUPS.map((group) => {
+      const name = t(group.nameKey);
+      const desc = t(group.descKey);
+      // 默认色取该组第一个 cssClass 的 styleRule 解析色
+      const defaultColor = this.matcher.getColorByCssClass(group.cssClasses[0]);
+      const customColor = this.settings.vocabColors?.[group.id] ?? '';
+      const enabled = this.settings.vocabTokenEnabled?.[group.id] ?? true;
+      const builtinCount = getVocabWords(this.currentRuleSet, group.id).length;
+      const customCount = customWords[group.id]?.length ?? 0;
+      return {
+        id: group.id,
+        name,
+        desc,
+        categoryId: TOKEN_TO_CATEGORY[group.id] ?? '',
+        cssClasses: group.cssClasses,
+        color: customColor || defaultColor || 'var(--text-muted)',
+        defaultColor,
+        enabled,
+        wordCount: builtinCount + customCount,
+        builtinCount,
+        customCount,
+      };
+    });
+  }
+
+  /**
+   * 获取词汇大类列表（颜色管理 Tab 渲染用）
+   */
+  getVocabCategories(): VocabCategoryInfo[] {
+    return VOCAB_CATEGORIES.map((cat) => ({
+      id: cat.id,
+      name: t(cat.nameKey),
+      desc: t(cat.descKey),
+      tokenIds: cat.groups,
+    }));
+  }
+
+  /**
+   * 获取指定令牌组的完整词汇列表（内置 + 自定义，供词汇预览）
+   */
+  getVocabWords(tokenId: string): { builtin: string[]; custom: string[] } {
+    const builtin = getVocabWords(this.currentRuleSet, tokenId);
+    const custom = [...(this.settings.vocabCustomWords?.[tokenId] ?? [])];
+    return { builtin, custom };
+  }
+
+  /**
+   * 统计当前活动文档中各词汇令牌的命中次数
+   * 用于颜色管理 Tab 的命中统计显示
+   */
+  getVocabHitCounts(): Record<string, number> {
+    const counts: Record<string, number> = {};
+    for (const g of VOCAB_TOKEN_GROUPS) counts[g.id] = 0;
+
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return counts;
+
+    const text = view.editor.getValue();
+    if (!text) return counts;
+
+    const enabledIds = this.settings.enabledRuleIds && this.settings.enabledRuleIds.length > 0
+      ? new Set(this.settings.enabledRuleIds)
+      : null;
+    const matches = this.getAllMatches(text).length ? this.getAllMatches(text) : this.matcher.match(text, enabledIds);
+    for (const m of matches) {
+      const tokenId = VOCAB_CLASS_TO_TOKEN[m.cssClass];
+      if (tokenId) counts[tokenId] = (counts[tokenId] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  /**
+   * 注入词汇令牌自定义颜色覆盖样式
+   * 用户为词汇令牌选色后覆盖对应 cssClass 的默认颜色
+   */
+  applyVocabColorStyles(): void {
+    if (this.vocabColorStyleEl) {
+      this.vocabColorStyleEl.remove();
+      this.vocabColorStyleEl = null;
+    }
+    const colors = this.settings.vocabColors ?? {};
+    const entries = Object.entries(colors).filter(([id]) => id);
+    if (entries.length === 0) return;
+
+    let css = '';
+    for (const group of VOCAB_TOKEN_GROUPS) {
+      // 禁用的令牌不生成颜色覆盖（匹配已被开关过滤）
+      if (this.settings.vocabTokenEnabled?.[group.id] === false) continue;
+      const hex = colors[group.id];
+      if (!hex) continue;
+      const selectors = group.cssClasses.map((c) => `.${c}`).join(', ');
+      css += `${selectors} { color: ${hex} !important; }\n`;
+    }
+    if (!css) return;
+
+    this.vocabColorStyleEl = document.createElement('style');
+    this.vocabColorStyleEl.id = 'prompt-colorizer-vocab-colors';
+    this.vocabColorStyleEl.textContent = css;
+    document.head.appendChild(this.vocabColorStyleEl);
+  }
+
+
+  /** 文件浏览器着色的多轮兜底延迟（毫秒），覆盖异步渲染慢场景 */
+  private static readonly FILE_COLORIZE_DELAYS: number[] = [0, 100, 300, 800, 2000];
+
+  /** 启动文件浏览器重渲染观察者，内容变化后防抖补着色 */
+  private observeFileExplorerRedraw(): void {
+    observeFileExplorerRedraw(this.app, () => {
+      colorizeFileExplorer(this.app, this.settings);
+    });
   }
 
   /**
    * 刷新文件浏览器着色
+   * 清除后分多轮补着色（文件项异步渲染，单次固定延迟会漏项），
+   * 并启动重渲染观察者应对文件夹展开/折叠等 DOM 重建
    */
   refreshFileColorizer(): void {
     clearFileExplorerColors(this.app);
-    setTimeout(() => {
-      colorizeFileExplorer(this.app, this.settings);
-    }, 100);
+    for (const delay of PromptColorizer.FILE_COLORIZE_DELAYS) {
+      setTimeout(() => {
+        colorizeFileExplorer(this.app, this.settings);
+      }, delay);
+    }
+    this.observeFileExplorerRedraw();
   }
 
   /**
@@ -1308,6 +1762,34 @@ export default class PromptColorizer extends Plugin {
   }
 
   /**
+   * 根据 CSS 类名查找对应的自定义文本颜色规则（v2.10）
+   * dsl-custom-text-{id} → CustomTextColor（供颜色导图读取效果/渐变信息）
+   */
+  getCustomTextColorByCssClass(cssClass: string): CustomTextColor | null {
+    const m = cssClass.match(/^dsl-custom-text-(.+)$/);
+    if (!m) return null;
+    return (
+      this.settings.customTextColors?.find((c) => c && c.id === m[1]) ?? null
+    );
+  }
+
+  /**
+   * 根据 CSS 类名获取 DSL 样式规则（v2.10.2）
+   * 供颜色导图读取 DSL 规则的效果属性（textShadow/animation/backgroundImage 等）
+   */
+  getStyleRuleByCssClass(cssClass: string): StyleRule | null {
+    return this.matcher.getStyleRules()?.[cssClass] ?? null;
+  }
+
+  /**
+   * 获取文本的所有着色匹配结果（主匹配 + 组合规则 + 自定义文本颜色）
+   * 供颜色导图面板等复用，与编辑器高亮使用完全相同的匹配逻辑
+   */
+  getAllMatches(text: string): RuleMatchResult[] {
+    return collectAllMatches(text, this.matcher, this.settings);
+  }
+
+  /**
    * 将文本按当前规则集匹配并渲染为带 dsl-* 类的 HTML(v3 实时预览)
    * 用于设置面板概览页的「实时效果预览」卡片
    * 仅渲染 inline 级匹配(block 级跨行匹配在预览中跳过以保持排版)
@@ -1346,7 +1828,10 @@ export default class PromptColorizer extends Plugin {
 
   /**
    * 活跃 Leaf 变化处理
+   * v2.9：切换文件时重算 per-note 主题色（frontmatter theme-palette）与文件夹色板
    */
+  private lastPaletteSignature = '';
+
   private onActiveLeafChange(leaf: WorkspaceLeaf | null): void {
     if (!leaf) return;
 
@@ -1355,8 +1840,42 @@ export default class PromptColorizer extends Plugin {
       colorizeTabTitle(this.app, file, this.settings);
     }
 
+    // per-note / 文件夹色板变化时重新注入颜色变量（签名比对避免重复注入）
+    const signature = this.computeActivePaletteSignature(file);
+    if (signature !== this.lastPaletteSignature) {
+      this.lastPaletteSignature = signature;
+      this.applyColorMode();
+    }
+
     setTimeout(() => {
       this.refreshFileColorizer();
     }, 200);
+  }
+
+  /**
+   * 计算当前激活文件的"生效色板签名"
+   * = frontmatter theme-palette 优先，其次文件夹色板映射，最后全局预设
+   * 签名变化才触发重新注入
+   */
+  private computeActivePaletteSignature(file: TFile | null): string {
+    let sig = this.settings.palettePreset || '-';
+
+    // 文件夹色板映射（与 resolveActiveColorTokens 同优先级逻辑）
+    if (this.settings.folderPalettesEnabled && file && this.settings.folderPalettes?.length) {
+      const hit = this.settings.folderPalettes
+        .filter((fp) => file.path.startsWith(fp.path + '/'))
+        .sort((a, b) => b.path.length - a.path.length)[0];
+      if (hit) sig = hit.palette;
+    }
+
+    // per-note frontmatter：theme-palette: macaron（或 theme-palettes 的单值）
+    if (file && file.extension === 'md') {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+      if (fm && typeof fm['theme-palette'] === 'string' && fm['theme-palette']) {
+        sig = fm['theme-palette'];
+      }
+    }
+    return sig;
   }
 }

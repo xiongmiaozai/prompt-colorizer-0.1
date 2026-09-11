@@ -45,12 +45,46 @@ export class RuleMatcher {
   private contextEnabled: boolean = true;
   /** 是否启用词典精细化着色 */
   private lexiconEnabled: boolean = true;
+  /** 包作用域（v5）：启用包引用的规则 ID 集合；null = 未启用任何包，回退全局开关 */
+  private ruleIdScope: Set<string> | null = null;
+  /** 包作用域（v5）：启用包引用的令牌 ID 集合；null = 未启用任何包，回退全局开关 */
+  private tokenIdScope: Set<string> | null = null;
 
   /**
    * 设置当前规则集
    */
   setRuleSet(rs: RuleSet | null): void {
     this.ruleSet = rs;
+  }
+
+  /**
+   * 设置包作用域规则 ID 集合（v5 包管理）
+   * @param ids 启用包引用的规则 ID 并集；null/空 = 无包作用域，全部规则按全局开关参与
+   */
+  setRuleIdScope(ids: Set<string> | null): void {
+    this.ruleIdScope = ids && ids.size > 0 ? ids : null;
+  }
+
+  /**
+   * 获取当前包作用域（诊断/导图用）
+   */
+  getRuleIdScope(): Set<string> | null {
+    return this.ruleIdScope;
+  }
+
+  /**
+   * 设置包作用域令牌 ID 集合（v5 包管理）
+   * @param ids 启用包引用的令牌 ID 并集；null/空 = 无包作用域，全部令牌按全局开关参与
+   */
+  setTokenIdScope(ids: Set<string> | null): void {
+    this.tokenIdScope = ids && ids.size > 0 ? ids : null;
+  }
+
+  /**
+   * 获取当前包作用域令牌集合（编辑器/阅读/导图三链路共用）
+   */
+  getTokenIdScope(): Set<string> | null {
+    return this.tokenIdScope;
   }
 
   /**
@@ -76,11 +110,22 @@ export class RuleMatcher {
   match(text: string, enabledRuleIds: Set<string> | null = null): RuleMatchResult[] {
     if (!this.ruleSet) return [];
 
+    // v5 包作用域：与调用方 enabledRuleIds 取交集（包限制 ∩ 全局开关）
+    let effectiveIds = enabledRuleIds;
+    if (this.ruleIdScope) {
+      if (!effectiveIds) {
+        effectiveIds = this.ruleIdScope;
+      } else {
+        effectiveIds = new Set([...effectiveIds].filter((id) => this.ruleIdScope!.has(id)));
+        if (effectiveIds.size === 0) return [];
+      }
+    }
+
     // 1. 解析区块上下文
     const blockContexts = this.parseBlockContexts(text);
 
     // 2. 执行正则规则匹配
-    const results = this.matchPatterns(text, enabledRuleIds, blockContexts);
+    const results = this.matchPatterns(text, effectiveIds, blockContexts);
 
     // 3. 执行词典匹配（最高优先级）
     if (this.lexiconEnabled) {
@@ -217,14 +262,22 @@ export class RuleMatcher {
           }
         }
 
-        results.push({
+        const result: RuleMatchResult = {
           from,
           to,
           cssClass: rule.cssClass,
           priority: rule.priority,
           block: rule.blockLevel,
           ruleId: rule.id,
-        });
+        };
+
+        // 资源引用提取序号（如 @图1 的 "1"），供角标伪元素 attr(data-ref) 显示
+        if (rule.cssClass === 'dsl-asset' && match[1]) {
+          const numMatch = match[1].match(/\d+/);
+          if (numMatch) result.refIndex = numMatch[0];
+        }
+
+        results.push(result);
       }
     }
 

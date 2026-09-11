@@ -2,6 +2,7 @@
  * 智能体预设名称/描述输入弹窗(v3)
  */
 import { App, Modal } from 'obsidian';
+import { t } from '../utils/i18n';
 
 export class AgentPresetNameModal extends Modal {
   private readonly titleText: string;
@@ -48,9 +49,9 @@ export class AgentPresetNameModal extends Modal {
     });
 
     const actions = form.createDiv({ cls: 'pc-agent-form-actions' });
-    const cancelBtn = actions.createEl('button', { text: '取消', cls: 'pc-agent-form-cancel' });
+    const cancelBtn = actions.createEl('button', { text: t('confirm.cancel'), cls: 'pc-agent-form-cancel' });
     const confirmBtn = actions.createEl('button', {
-      text: '确定',
+      text: t('confirm.ok'),
       cls: 'pc-agent-form-confirm mod-cta',
     });
 

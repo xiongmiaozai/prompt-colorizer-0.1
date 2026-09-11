@@ -141,6 +141,69 @@ function parseInlineArray(value: string): YamlValue[] {
 }
 
 /**
+ * 在字符串中查找冒号位置（跳过引号内的冒号，要求冒号后跟空格或行尾）
+ */
+function findColonInString(s: string): number {
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === "'" && !inDouble) inSingle = !inSingle;
+    else if (ch === '"' && !inSingle) inDouble = !inDouble;
+    else if (ch === ':' && !inSingle && !inDouble) {
+      if (i === s.length - 1 || s[i + 1] === ' ' || s[i + 1] === '\t') {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+/**
+ * 解析内联对象 { key: value, key2: value2 }
+ * 支持 YAML inline map 语法，值可递归为内联数组/对象/标量
+ */
+function parseInlineMap(value: string): { [key: string]: YamlValue } {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
+    return {};
+  }
+  const inner = trimmed.slice(1, -1);
+  if (inner.trim() === '') return {};
+
+  // 按逗号分割（处理引号内逗号）
+  const items: string[] = [];
+  let current = '';
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i];
+    if (ch === "'" && !inDouble) { inSingle = !inSingle; current += ch; }
+    else if (ch === '"' && !inSingle) { inDouble = !inDouble; current += ch; }
+    else if (ch === ',' && !inSingle && !inDouble) { items.push(current); current = ''; }
+    else current += ch;
+  }
+  if (current.trim()) items.push(current);
+
+  const result: { [key: string]: YamlValue } = {};
+  for (const item of items) {
+    const colonIdx = findColonInString(item);
+    if (colonIdx > 0) {
+      const key = item.slice(0, colonIdx).trim();
+      const val = item.slice(colonIdx + 1).trim();
+      if (val.startsWith('[')) {
+        result[key] = parseInlineArray(val);
+      } else if (val.startsWith('{')) {
+        result[key] = parseInlineMap(val);
+      } else {
+        result[key] = parseScalar(val);
+      }
+    }
+  }
+  return result;
+}
+
+/**
  * 行解析器
  */
 class YamlLineParser {
@@ -208,6 +271,10 @@ class YamlLineParser {
         // 内联数组
         result[key] = parseInlineArray(valueStr);
         this.pos++;
+      } else if (valueStr.startsWith('{')) {
+        // 内联对象（inline map）
+        result[key] = parseInlineMap(valueStr);
+        this.pos++;
       } else {
         // 标量值
         result[key] = parseScalar(valueStr);
@@ -217,6 +284,7 @@ class YamlLineParser {
 
     return result;
   }
+
 
   /**
    * 解析数组结构
@@ -269,6 +337,9 @@ class YamlLineParser {
           } else if (val.startsWith('[')) {
             obj[key] = parseInlineArray(val);
             this.pos++;
+          } else if (val.startsWith('{')) {
+            obj[key] = parseInlineMap(val);
+            this.pos++;
           } else {
             obj[key] = parseScalar(val);
             this.pos++;
@@ -294,6 +365,9 @@ class YamlLineParser {
                 }
               } else if (v.startsWith('[')) {
                 obj[k] = parseInlineArray(v);
+                this.pos++;
+              } else if (v.startsWith('{')) {
+                obj[k] = parseInlineMap(v);
                 this.pos++;
               } else {
                 obj[k] = parseScalar(v);

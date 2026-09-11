@@ -12,6 +12,7 @@ import { MarkdownPostProcessorContext } from 'obsidian';
 import type { PromptColorizerSettings } from '../types';
 import type { RuleMatcher } from '../rule-engine/matcher';
 import { matchCustomTextColors } from '../highlighter/custom-text-colors';
+import { filterMatchesByToggles } from '../highlighter/editor-extension';
 
 /**
  * 阅读模式后处理器
@@ -52,7 +53,7 @@ export function createPostProcessor(
     // 处理自定义文本颜色（优先级最高，不写入 md 文件，按文本内容全局匹配）
     // 放在 DSL 之后处理：仅对未被 DSL 着色的纯文本节点应用自定义颜色
     // 用户主动指定的颜色应优先于 DSL 规则，但为避免重复着色，这里跳过已有 pc-reader-/dsl- 类的节点
-    processCustomTextColors(el, settings);
+    processCustomTextColors(el, settings, matcher);
 
     // 处理变量占位符（最后处理，避免与 DSL 模式冲突）
     processVariables(el, settings);
@@ -342,8 +343,8 @@ function processDslPatterns(
     const parent = textNode.parentElement;
     if (!parent) continue;
 
-    // 使用 RuleMatcher 执行匹配
-    const matches = matcher.match(text);
+    // 使用 RuleMatcher 执行匹配（并按词汇令牌/规则开关过滤，与编辑器模式一致）
+    const matches = filterMatchesByToggles(matcher.match(text), settings);
 
     if (matches.length === 0) continue;
 
@@ -366,6 +367,9 @@ function processDslPatterns(
       // 创建着色 span（使用 dsl- 前缀类名，与编辑器模式统一）
       const span = document.createElement('span');
       span.className = match.cssClass;
+      if (match.refIndex) {
+        span.setAttribute('data-ref', match.refIndex);
+      }
       span.textContent = text.slice(from, to);
       fragment.appendChild(span);
 
@@ -451,15 +455,23 @@ function processVariables(el: HTMLElement, settings: PromptColorizerSettings): v
  * - 颜色信息不写入 md 文件，仅通过 CSS 类名应用
  * - CSS 类名样式由 main.ts 动态注入的 <style> 提供
  *
- * @param el HTML 元素根节点
- * @param settings 插件设置
- */
+  * @param el HTML 元素根节点
+  * @param settings 插件设置
+  * @param matcher 规则匹配器（读取包作用域令牌集合；可为 null）
+  */
 function processCustomTextColors(
   el: HTMLElement,
-  settings: PromptColorizerSettings
+  settings: PromptColorizerSettings,
+  matcher: RuleMatcher | null = null
 ): void {
   if (settings.customTextColorsEnabled === false) return;
   if (!settings.customTextColors || settings.customTextColors.length === 0) return;
+  // 包作用域（v5）：启用包时仅包内引用的令牌参与
+  const tokenScope = matcher?.getTokenIdScope() ?? null;
+  if (tokenScope) {
+    settings.customTextColors = settings.customTextColors.filter((c) => tokenScope.has(c.id));
+    if (settings.customTextColors.length === 0) return;
+  }
   // 启用开关已确认开启，下面统一传入 true 简化类型推断
 
   // 收集需要处理的文本节点
@@ -499,7 +511,7 @@ function processCustomTextColors(
     if (!parent) continue;
 
     // 使用自定义颜色匹配器查找匹配区间
-    // 启用状态已在函数入口判断，此处直接传 true
+    // 启用状态已在函数入口判断，此处直接传 true（包作用域过滤已在入口完成）
     const matches = matchCustomTextColors(
       text,
       settings.customTextColors,

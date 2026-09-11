@@ -5,6 +5,7 @@
 
 import { parseYaml } from './yaml-parser';
 import { getBuiltinRuleFiles, BUILTIN_VERSION, BUILTIN_UPDATE_TIME } from './builtin-rules';
+import type { ColorScheme } from '../types';
 import type {
   PatternDef,
   BasePatternsConfig,
@@ -155,6 +156,7 @@ export function compileRuleSet(
       lexicons,
       contextRules,
       colorTokens,
+      palettes: themeConfig?.palettes ?? {},
       styleRules,
       scanStateEnum,
       version,
@@ -257,6 +259,7 @@ function compileLexicons(
         regex,
         cssClass,
         priority,
+        words: [...words],
       });
     } catch (e) {
       console.warn(`[PromptColorizer] 词典正则编译失败: ${category}`, e);
@@ -704,49 +707,169 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 /**
+ * 十六进制色值 → HSL 分量
+ * @returns { h, s, l } — h: 0-360, s/l: 0-1
+ */
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const cleaned = hex.replace('#', '');
+  const r = parseInt(cleaned.substring(0, 2), 16) / 255;
+  const g = parseInt(cleaned.substring(2, 4), 16) / 255;
+  const b = parseInt(cleaned.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h: number;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return { h: h * 360, s, l };
+}
+
+/**
+ * HSL 分量 → 十六进制色值
+ */
+function hslToHex(h: number, s: number, l: number): string {
+  h = ((h % 360) + 360) % 360;
+  s = Math.min(1, Math.max(0, s));
+  l = Math.min(1, Math.max(0, l));
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; }
+  else if (h < 120) { r = x; g = c; }
+  else if (h < 180) { g = c; b = x; }
+  else if (h < 240) { g = x; b = c; }
+  else if (h < 300) { r = x; b = c; }
+  else { r = c; b = x; }
+  const toHex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * 按全局配色方案变换颜色值（v2.8.0 降噪；v2.9.0 增 contrast 档）
+ *
+ * - default：原样返回
+ * - soft（柔和）：饱和度 ×0.6，正文着色更淡雅
+ * - mono（单色强调）：饱和度 ×0.12（近灰度），仅保留极弱色相，
+ *   用户可通过自定义颜色为个别令牌上色实现"单色强调"
+ * - vivid（鲜明）：饱和度 ×1.2（上限 1.0），色块对比更强
+ * - contrast（高对比）：明度向两端拉伸（浅色加深、深色提亮）+ 饱和度 ×1.1，
+ *   适配弱视觉场景与投影环境
+ *
+ * @param hex 原始颜色值
+ * @param scheme 配色方案
+ * @returns 变换后的颜色值
+ */
+export function applyColorSchemeToHex(hex: string, scheme: ColorScheme): string {
+  if (!hex || !hex.startsWith('#')) return hex;
+  if (scheme === 'default') return hex;
+  const { h, s, l } = hexToHsl(hex);
+  if (s < 0.02) return hex; // 无彩色（灰阶）不做变换
+  switch (scheme) {
+    case 'soft':
+      return hslToHex(h, s * 0.6, l);
+    case 'mono':
+      return hslToHex(h, s * 0.12, l);
+    case 'vivid':
+      return hslToHex(h, Math.min(1, s * 1.2), l);
+    case 'contrast': {
+      // 浅色系（l>0.5）向暗拉伸、深色系向亮拉伸，各拉 15%，上限/下限 0.06/0.94
+      const stretched = l > 0.5 ? Math.max(0.06, l - 0.15) : Math.min(0.94, l + 0.15);
+      return hslToHex(h, Math.min(1, s * 1.1), stretched);
+    }
+    default:
+      return hex;
+  }
+}
+
+/** 衍生透明度配置（项 3 自动配色衍生可调） */
+export interface DeriveAlphas {
+  /** 浅色模式 soft 背景（默认 0.06） */
+  softLight?: number;
+  /** 深色模式 soft 背景（默认 0.10） */
+  softDark?: number;
+  /** 中文补偿增量（叠加在 soft 之上，默认 0.02） */
+  softCnBoost?: number;
+  /** 浅色模式 border 边框（默认 0.15） */
+  borderLight?: number;
+  /** 深色模式 border 边框（默认 0.20） */
+  borderDark?: number;
+  /** 中文边框补偿增量（默认 0.03） */
+  borderCnBoost?: number;
+}
+
+/** 衍生透明度默认值 */
+const DEFAULT_ALPHAS: Required<DeriveAlphas> = {
+  softLight: 0.06,
+  softDark: 0.10,
+  softCnBoost: 0.02,
+  borderLight: 0.15,
+  borderDark: 0.20,
+  borderCnBoost: 0.03,
+};
+
+const clamp01 = (v: number): number => Math.min(0.6, Math.max(0.01, v));
+
+/**
  * 生成颜色变量的 CSS 文本
  * 从 colorTokens 定义生成 :root 和 body.theme-dark 两套 CSS 变量
  *
  * 每个令牌生成 5 个变量：
  *   --dsl-{name}           → 主色
- *   --dsl-{name}-soft      → 半透明背景（浅色 6%，深色 10%）
- *   --dsl-{name}-soft-cn   → 中文补偿背景（浅色 8%，深色 12%，补偿 CJK 字符密度）
- *   --dsl-{name}-border    → 边框色（浅色 15%，深色 20%）
- *   --dsl-{name}-border-cn → 中文补偿边框（浅色 18%，深色 22%）
+ *   --dsl-{name}-soft      → 半透明背景（浅色默认 6%，深色默认 10%，可配）
+ *   --dsl-{name}-soft-cn   → 中文补偿背景（soft + 补偿增量）
+ *   --dsl-{name}-border    → 边框色（浅色默认 15%，深色默认 20%，可配）
+ *   --dsl-{name}-border-cn → 中文补偿边框（border + 补偿增量）
  *
  * @param colorTokens 颜色令牌定义映射
+ * @param colorScheme 全局配色方案（default 原色 / soft 柔和 / mono 单色强调 / vivid 鲜明 / contrast 高对比）
+ * @param alphas 衍生透明度配置（缺省用默认值）
  * @returns CSS 文本
  */
-export function generateColorVariables(colorTokens: Record<string, ColorToken>): string {
+export function generateColorVariables(
+  colorTokens: Record<string, ColorToken>,
+  colorScheme: ColorScheme = 'default',
+  alphas: DeriveAlphas = {}
+): string {
   if (Object.keys(colorTokens).length === 0) return '';
+
+  const a = { ...DEFAULT_ALPHAS, ...alphas };
 
   let css = '/* 动态颜色令牌 — 由 YAML colors 区块自动生成 */\n\n';
 
   // 浅色模式变量
   css += ':root {\n';
   for (const [name, token] of Object.entries(colorTokens)) {
-    const lightColor = token.light || '#888888';
+    const lightColor = applyColorSchemeToHex(token.light || '#888888', colorScheme);
     css += `  --dsl-${name}: ${lightColor};\n`;
-    css += `  --dsl-${name}-soft: ${hexToRgba(lightColor, 0.06)};\n`;
-    // 中文背景透明度补偿（浅色 8%，高于默认 6%，补偿 CJK 字符密度更高的视觉重量）
-    css += `  --dsl-${name}-soft-cn: ${hexToRgba(lightColor, 0.08)};\n`;
-    css += `  --dsl-${name}-border: ${hexToRgba(lightColor, 0.15)};\n`;
-    // 中文边框透明度补偿（浅色 18%，高于默认 15%）
-    css += `  --dsl-${name}-border-cn: ${hexToRgba(lightColor, 0.18)};\n`;
+    css += `  --dsl-${name}-soft: ${hexToRgba(lightColor, clamp01(a.softLight))};\n`;
+    // 中文背景透明度补偿（soft + 增量，补偿 CJK 字符密度更高的视觉重量）
+    css += `  --dsl-${name}-soft-cn: ${hexToRgba(lightColor, clamp01(a.softLight + a.softCnBoost))};\n`;
+    css += `  --dsl-${name}-border: ${hexToRgba(lightColor, clamp01(a.borderLight))};\n`;
+    // 中文边框透明度补偿
+    css += `  --dsl-${name}-border-cn: ${hexToRgba(lightColor, clamp01(a.borderLight + a.borderCnBoost))};\n`;
+    // 发光光晕（浅色模式下光晕偏弱，避免在亮底上发糊）
+    css += `  --dsl-${name}-glow: 0 0 2px ${hexToRgba(lightColor, 0.55)}, 0 0 6px ${hexToRgba(lightColor, 0.30)}, 0 0 14px ${hexToRgba(lightColor, 0.12)};\n`;
   }
   css += '}\n\n';
 
   // 深色模式变量
   css += 'body.theme-dark {\n';
   for (const [name, token] of Object.entries(colorTokens)) {
-    const darkColor = token.dark || token.light || '#888888';
+    const darkColor = applyColorSchemeToHex(token.dark || token.light || '#888888', colorScheme);
     css += `  --dsl-${name}: ${darkColor};\n`;
-    css += `  --dsl-${name}-soft: ${hexToRgba(darkColor, 0.10)};\n`;
-    // 中文背景透明度补偿（深色 12%，高于默认 10%）
-    css += `  --dsl-${name}-soft-cn: ${hexToRgba(darkColor, 0.12)};\n`;
-    css += `  --dsl-${name}-border: ${hexToRgba(darkColor, 0.20)};\n`;
-    // 中文边框透明度补偿（深色 22%，高于默认 20%）
-    css += `  --dsl-${name}-border-cn: ${hexToRgba(darkColor, 0.22)};\n`;
+    css += `  --dsl-${name}-soft: ${hexToRgba(darkColor, clamp01(a.softDark))};\n`;
+    // 中文背景透明度补偿
+    css += `  --dsl-${name}-soft-cn: ${hexToRgba(darkColor, clamp01(a.softDark + a.softCnBoost))};\n`;
+    css += `  --dsl-${name}-border: ${hexToRgba(darkColor, clamp01(a.borderDark))};\n`;
+    // 中文边框透明度补偿
+    css += `  --dsl-${name}-border-cn: ${hexToRgba(darkColor, clamp01(a.borderDark + a.borderCnBoost))};\n`;
+    // 发光光晕（深色模式下三层渐强，霓虹感更明显）
+    css += `  --dsl-${name}-glow: 0 0 2px ${hexToRgba(darkColor, 0.75)}, 0 0 8px ${hexToRgba(darkColor, 0.45)}, 0 0 18px ${hexToRgba(darkColor, 0.18)};\n`;
   }
   css += '}\n\n';
 
@@ -808,22 +931,41 @@ export function resolveColorReference(
     return trimmed;
   }
 
-  // 带修饰的令牌引用：如 "danger.soft" 或 "danger.border"
-  const modifierMatch = trimmed.match(/^([a-zA-Z_][\w-]*)\.(soft|border)$/);
+  // 带修饰的令牌引用：如 "danger.soft" / "danger.border" / "danger.glow"
+  const modifierMatch = trimmed.match(/^([a-zA-Z_][\w-]*)\.(soft|border|glow)$/);
   if (modifierMatch) {
     const tokenName = modifierMatch[1];
     const modifier = modifierMatch[2];
     if (colorTokens[tokenName]) {
-      // 中文规则引用 .soft/.border 时使用补偿版变量（更高透明度）
-      const suffix = isChinese ? `${modifier}-cn` : modifier;
+      // glow 光晕变量无中文补偿版（文本阴影透明度不需补偿）
+      // soft/border 在中文规则下使用补偿版变量（更高透明度）
+      const suffix = modifier === 'glow' ? modifier : (isChinese ? `${modifier}-cn` : modifier);
       return `var(--dsl-${tokenName}-${suffix})`;
     }
     return trimmed;
   }
 
-  // 复合值中的令牌引用：如 "1px solid danger.border"
+  // 颜色混叠：mix(a, b[, 比例]) → color-mix(in oklab, var(--dsl-a), var(--dsl-b) 比例%)
+  // 比例省略时默认 50；也可直接写 hex（mix(#ef4444, danger, 30)）
+  const mixMatch = trimmed.match(/^mix\(\s*([\w#-]+)\s*,\s*([\w#-]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
+  if (mixMatch) {
+    const toVar = (ref: string): string | null => {
+      if (colorTokens[ref]) return `var(--dsl-${ref})`;
+      if (/^#[0-9a-fA-F]{3,8}$/.test(ref)) return ref;
+      return null;
+    };
+    const a = toVar(mixMatch[1]);
+    const b = toVar(mixMatch[2]);
+    if (a && b) {
+      const pct = mixMatch[3] ? parseInt(mixMatch[3], 10) : 50;
+      return `color-mix(in oklab, ${a}, ${b} ${pct}%)`;
+    }
+    return trimmed;
+  }
+
+  // 复合值中的令牌引用：如 "1px solid danger.border" / "0 0 5px danger.glow"
   // 匹配所有令牌引用并替换
-  return trimmed.replace(/\b([a-zA-Z_][\w-]*(?:\.(?:soft|border))?)\b/g, (match) => {
+  return trimmed.replace(/\b([a-zA-Z_][\w-]*(?:\.(?:soft|border|glow))?)\b/g, (match) => {
     // 跳过 CSS 关键字和单位
     if (/^(solid|dashed|dotted|none|hidden|medium|thick|thin|px|em|rem|vh|vw|%|auto|center|left|right|top|bottom|bold|normal|italic|underline|none|block|inline|flex|grid)$/i.test(match)) {
       return match;
@@ -834,6 +976,10 @@ export function resolveColorReference(
     const modifier = parts[1];
 
     if (colorTokens[tokenName]) {
+      if (modifier === 'glow') {
+        // glow 光晕变量无中文补偿版
+        return `var(--dsl-${tokenName}-glow)`;
+      }
       if (modifier === 'soft' || modifier === 'border') {
         // 中文规则引用 .soft/.border 时使用补偿版变量（更高透明度）
         const suffix = isChinese ? `${modifier}-cn` : modifier;
@@ -862,6 +1008,166 @@ export function resolveColorReference(
  * @param chineseRuleClasses 含中文的 CSS 类名集合（显式传入时优先；未传则回退到 compileRuleSet 预计算的模块级缓存）
  * @returns CSS 文本
  */
+/**
+ * 构建单组样式属性列表（主规则与 hover 子规则共用）
+ * @param style 样式规则
+ * @param colorTokens 颜色令牌定义
+ * @param isChineseRule 是否为中文规则（透明度/字重补偿）
+ */
+function buildStyleProperties(
+  style: StyleRule,
+  colorTokens: Record<string, ColorToken>,
+  isChineseRule: boolean
+): string[] {
+  const properties: string[] = [];
+
+  if (style.color) properties.push(`  color: ${resolveColorReference(style.color, colorTokens, isChineseRule)};`);
+  // 字重：中文规则下 bold 补偿为 800（var(--pc-weight-bold-cn)），提升 CJK 笔画辨识度
+  if (style.fontWeight) {
+    if (isChineseRule && style.fontWeight === 'bold') {
+      properties.push(`  font-weight: var(--pc-weight-bold-cn);`);
+    } else {
+      properties.push(`  font-weight: ${style.fontWeight};`);
+    }
+  }
+  if (style.fontStyle) properties.push(`  font-style: ${style.fontStyle};`);
+  // 字体族：monospace 走专用变量，其他原样输出
+  if (style.fontFamily) {
+    if (style.fontFamily === 'monospace') {
+      properties.push(`  font-family: var(--pc-font-mono);`);
+    } else {
+      properties.push(`  font-family: ${style.fontFamily};`);
+    }
+  }
+  if (style.fontSize) properties.push(`  font-size: ${style.fontSize};`);
+  if (style.textDecoration) properties.push(`  text-decoration: ${style.textDecoration};`);
+  // 背景/边框：中文规则下 .soft/.border 引用解析为补偿版变量（更高透明度）
+  if (style.background) properties.push(`  background: ${resolveColorReference(style.background, colorTokens, isChineseRule)};`);
+  if (style.border) properties.push(`  border: ${resolveColorReference(style.border, colorTokens, isChineseRule)};`);
+  if (style.borderBottom) properties.push(`  border-bottom: ${resolveColorReference(style.borderBottom, colorTokens, isChineseRule)};`);
+  if (style.borderLeft) properties.push(`  border-left: ${resolveColorReference(style.borderLeft, colorTokens, isChineseRule)};`);
+  if (style.borderRadius) properties.push(`  border-radius: ${style.borderRadius};`);
+  if (style.padding) properties.push(`  padding: ${style.padding};`);
+  if (style.paddingLeft) properties.push(`  padding-left: ${style.paddingLeft};`);
+  if (style.opacity) properties.push(`  opacity: ${style.opacity};`);
+  if (style.textShadow) properties.push(`  text-shadow: ${resolveColorReference(style.textShadow, colorTokens, isChineseRule)};`);
+  if (style.textStroke) properties.push(`  -webkit-text-stroke: ${resolveColorReference(style.textStroke, colorTokens, isChineseRule)};`);
+  if (style.textFillColor) properties.push(`  -webkit-text-fill-color: ${resolveColorReference(style.textFillColor, colorTokens, isChineseRule)};`);
+  if (style.boxShadow) properties.push(`  box-shadow: ${resolveColorReference(style.boxShadow, colorTokens, isChineseRule)};`);
+  if (style.letterSpacing) properties.push(`  letter-spacing: ${style.letterSpacing};`);
+  if (style.verticalAlign) properties.push(`  vertical-align: ${style.verticalAlign};`);
+  if (style.textTransform) properties.push(`  text-transform: ${style.textTransform};`);
+  if (style.filter) properties.push(`  filter: ${style.filter};`);
+  if (style.animation) properties.push(`  animation: ${style.animation};`);
+  if (style.backgroundImage) properties.push(`  background-image: ${resolveColorReference(style.backgroundImage, colorTokens, isChineseRule)};`);
+  if (style.backgroundSize) properties.push(`  background-size: ${style.backgroundSize};`);
+  if (style.backgroundClip) {
+    properties.push(`  -webkit-background-clip: ${style.backgroundClip};`);
+    properties.push(`  background-clip: ${style.backgroundClip};`);
+    if (style.backgroundClip === 'text') {
+      properties.push(`  -webkit-text-fill-color: transparent;`);
+    }
+  }
+
+  return properties;
+}
+
+/**
+ * 构建伪元素（::before/::after）属性列表
+ * @param pseudo 伪元素属性映射（content 原样输出，其余解析令牌引用）
+ * @param colorTokens 颜色令牌定义
+ * @param isChineseRule 是否为中文规则
+ */
+function buildPseudoProperties(
+  pseudo: Record<string, string>,
+  colorTokens: Record<string, ColorToken>,
+  isChineseRule: boolean
+): string[] {
+  const CSS_KEY_MAP: Record<string, string> = {
+    content: 'content',
+    color: 'color',
+    fontSize: 'font-size',
+    fontWeight: 'font-weight',
+    fontStyle: 'font-style',
+    fontFamily: 'font-family',
+    opacity: 'opacity',
+    verticalAlign: 'vertical-align',
+    letterSpacing: 'letter-spacing',
+    textShadow: 'text-shadow',
+    marginLeft: 'margin-left',
+    marginRight: 'margin-right',
+    padding: 'padding',
+  };
+
+  const properties: string[] = [];
+  for (const [key, rawValue] of Object.entries(pseudo)) {
+    const value = key === 'content'
+      ? rawValue
+      : resolveColorReference(rawValue, colorTokens, isChineseRule);
+    const cssKey = CSS_KEY_MAP[key];
+    if (cssKey) {
+      properties.push(`  ${cssKey}: ${value};`);
+    }
+  }
+  return properties;
+}
+
+/**
+ * 追加一组选择器块（编辑器模式 + 阅读模式）
+ * @param css 已累积的 CSS 文本
+ * @param className CSS 类名
+ * @param suffix 选择器后缀（'' / ':hover' / '::before' / '::after'）
+ * @param properties 属性列表
+ */
+function appendSelectorBlocks(
+  css: string,
+  className: string,
+  suffix: string,
+  properties: string[]
+): string {
+  if (properties.length === 0) return css;
+  css += `.cm-line .${className}${suffix} {\n${properties.join('\n')}\n}\n\n`;
+  css += `.${className}${suffix} {\n${properties.join('\n')}\n}\n\n`;
+  return css;
+}
+
+/** 内置 keyframes 动画库 — YAML animation 引用 pc-xxx 名称时自动注入定义 */
+const BUILTIN_KEYFRAMES: Record<string, string> = {
+  // 彩虹流动：渐变背景色带平滑滚动（配 background-clip: text + backgroundImage）
+  'pc-rainbow-flow': `@keyframes pc-rainbow-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}`,
+  // 呼吸光晕：发光强度脉动（配 textShadow）
+  'pc-glow-pulse': `@keyframes pc-glow-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}`,
+  // 渐隐闪烁：透明度轻呼吸（弱化标记用，节奏克制）
+  'pc-fade-blink': `@keyframes pc-fade-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}`,
+};
+
+/**
+ * 收集规则集中引用的内置动画名
+ * 匹配 animation 值（含 hover 子规则）中的 pc- 前缀动画名
+ */
+function collectUsedKeyframes(styleRules: Record<string, StyleRule>): Set<string> {
+  const used = new Set<string>();
+  const collect = (anim?: string) => {
+    if (!anim) return;
+    const m = anim.match(/(pc-[\w-]+)/);
+    if (m && BUILTIN_KEYFRAMES[m[1]]) used.add(m[1]);
+  };
+  for (const style of Object.values(styleRules)) {
+    collect(style.animation);
+    collect(style.hover?.animation);
+  }
+  return used;
+}
+
 export function generateStyleCss(
   styleRules: Record<string, StyleRule>,
   colorTokens: Record<string, ColorToken> = {},
@@ -875,46 +1181,62 @@ export function generateStyleCss(
   for (const [className, style] of Object.entries(styleRules)) {
     // 该规则是否匹配中文内容（决定是否应用透明度/字重补偿）
     const isChineseRule = cnSet.has(className);
-    const properties: string[] = [];
 
-    if (style.color) properties.push(`  color: ${resolveColorReference(style.color, colorTokens, isChineseRule)};`);
-    // 字重：中文规则下 bold 补偿为 800（var(--pc-weight-bold-cn)），提升 CJK 笔画辨识度
-    if (style.fontWeight) {
-      if (isChineseRule && style.fontWeight === 'bold') {
-        properties.push(`  font-weight: var(--pc-weight-bold-cn);`);
-      } else {
-        properties.push(`  font-weight: ${style.fontWeight};`);
-      }
-    }
-    if (style.fontStyle) properties.push(`  font-style: ${style.fontStyle};`);
-    // 字体族：monospace 走专用变量，其他原样输出
-    if (style.fontFamily) {
-      if (style.fontFamily === 'monospace') {
-        properties.push(`  font-family: var(--pc-font-mono);`);
-      } else {
-        properties.push(`  font-family: ${style.fontFamily};`);
-      }
-    }
-    if (style.fontSize) properties.push(`  font-size: ${style.fontSize};`);
-    if (style.textDecoration) properties.push(`  text-decoration: ${style.textDecoration};`);
-    // 背景/边框：中文规则下 .soft/.border 引用解析为补偿版变量（更高透明度）
-    if (style.background) properties.push(`  background: ${resolveColorReference(style.background, colorTokens, isChineseRule)};`);
-    if (style.border) properties.push(`  border: ${resolveColorReference(style.border, colorTokens, isChineseRule)};`);
-    if (style.borderLeft) properties.push(`  border-left: ${resolveColorReference(style.borderLeft, colorTokens, isChineseRule)};`);
-    if (style.borderRadius) properties.push(`  border-radius: ${style.borderRadius};`);
-    if (style.padding) properties.push(`  padding: ${style.padding};`);
-    if (style.paddingLeft) properties.push(`  padding-left: ${style.paddingLeft};`);
-    if (style.opacity) properties.push(`  opacity: ${style.opacity};`);
+    // 主规则
+    css = appendSelectorBlocks(css, className, '', buildStyleProperties(style, colorTokens, isChineseRule));
 
-    if (properties.length > 0) {
-      // 编辑器模式
-      css += `/* 编辑器模式 */\n`;
-      css += `.cm-line .${className} {\n${properties.join('\n')}\n}\n\n`;
-      // 阅读模式
-      css += `/* 阅读模式 */\n`;
-      css += `.${className} {\n${properties.join('\n')}\n}\n\n`;
+    // 悬停增强（:hover 子规则）
+    if (style.hover) {
+      css = appendSelectorBlocks(css, className, ':hover', buildStyleProperties(style.hover, colorTokens, isChineseRule));
+    }
+
+    // 前后缀装饰符伪元素
+    if (style.before) {
+      css = appendSelectorBlocks(css, className, '::before', buildPseudoProperties(style.before, colorTokens, isChineseRule));
+    }
+    if (style.after) {
+      css = appendSelectorBlocks(css, className, '::after', buildPseudoProperties(style.after, colorTokens, isChineseRule));
     }
   }
 
+  // 追加引用到的内置动画定义（按需注入，无引用不输出）
+  for (const name of collectUsedKeyframes(styleRules)) {
+    css += BUILTIN_KEYFRAMES[name] + '\n\n';
+  }
+
+  return css;
+}
+
+/**
+ * 色盲辅助 CSS（项 7）
+ * body.pc-colorblind-assist 下为红/绿系令牌追加冗余下划线：
+ * 不依赖色相即可区分——红色系（排除/负面/系统角色）= 波浪线，绿色系（台词/质量/成功）= 实线
+ * 动态样式 <style> 之后注入，靠 body class 开关整体启用/禁用
+ */
+const COLORBLIND_RED_CLASSES = [
+  'dsl-constraint',
+  'dsl-sd-negative-header',
+  'dsl-negative-tag',
+  'dsl-role-tag',
+  'dsl-md-strikethrough',
+];
+const COLORBLIND_GREEN_CLASSES = [
+  'dsl-dialogue',
+  'dsl-quality-tag',
+  'dsl-quality-tag-ext',
+  'dsl-md-task',
+];
+
+export function generateColorBlindAssistCss(): string {
+  let css = '/* 色盲辅助 — 红/绿系令牌冗余下划线（非色相编码） */\n';
+  css += 'body.pc-colorblind-assist .cm-line, body.pc-colorblind-assist .markdown-preview-view { /* scope */ }\n';
+  for (const cls of COLORBLIND_RED_CLASSES) {
+    css += `body.pc-colorblind-assist .cm-line .${cls} { text-decoration: underline wavy currentColor; text-decoration-thickness: 1px; }\n`;
+    css += `body.pc-colorblind-assist .${cls} { text-decoration: underline wavy currentColor; text-decoration-thickness: 1px; }\n`;
+  }
+  for (const cls of COLORBLIND_GREEN_CLASSES) {
+    css += `body.pc-colorblind-assist .cm-line .${cls} { text-decoration: underline currentColor; text-decoration-thickness: 2px; }\n`;
+    css += `body.pc-colorblind-assist .${cls} { text-decoration: underline currentColor; text-decoration-thickness: 2px; }\n`;
+  }
   return css;
 }

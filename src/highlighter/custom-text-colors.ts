@@ -17,6 +17,7 @@
 
 import type { CustomTextColor } from '../types';
 import type { RuleMatchResult } from '../rule-engine/types';
+import { mergeEffectDeclarations, migrateEffects, declarationsToCssRule, applyGradient, reconcileOutline } from './effect-registry';
 
 /**
  * 转义字符串中的正则特殊字符
@@ -179,6 +180,8 @@ export function overlapsCustomColor(
 /**
  * 根据自定义颜色列表生成对应的 CSS 样式文本
  * 注入到 document.head 后，类名 dsl-custom-text-{id} 即可生效
+ * 效果由 effect-registry 注册表程序化合并（支持多效果自由组合）
+ * v2.9：color2 非空时启用双色渐变（background-clip: text）
  * @param colors 自定义颜色规则列表
  * @returns CSS 文本（空字符串表示无需注入）
  */
@@ -188,9 +191,19 @@ export function generateCustomTextColorsCss(colors: CustomTextColor[]): string {
   const lines: string[] = [];
   for (const c of colors) {
     if (!c.id || !c.color) continue;
-    // 同时作用于编辑器（.cm-content 内）和阅读模式（.markdown-preview-view 内）
-    // 使用 .dsl-custom-text-{id} 类选择器
-    lines.push(`.dsl-custom-text-${c.id} { color: ${c.color}; }`);
+    // 合并效果组合声明（旧 effect 字段自动迁移），始终包含基础颜色；v2.13 传入效果参数
+    const effects = migrateEffects(c);
+    const declarations: Record<string, string> = {
+      color: c.color,
+      ...mergeEffectDeclarations(effects, c.color, c.effectParams),
+    };
+    // outline 叠加修正：透明填充改回主色（描边+填充共存）
+    reconcileOutline(declarations, effects, c.color);
+
+    // 多色/双色渐变（v2.10）：合成逻辑收敛至 applyGradient（与 Modal 预览共用，所见即所得）
+    applyGradient(declarations, c.color, c.color2, c.gradientStops, c.gradientAngle);
+
+    lines.push(declarationsToCssRule(`dsl-custom-text-${c.id}`, declarations));
   }
   return lines.join('\n');
 }

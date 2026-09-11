@@ -3,6 +3,9 @@
  * 定义 YAML 规则文件的结构和编译后的规则接口
  */
 
+import type { DeriveAlphas } from './rule-compiler';
+export type { DeriveAlphas };
+
 // ============================================================
 // YAML 配置文件结构类型
 // ============================================================
@@ -62,6 +65,22 @@ export interface StyleRule {
   padding?: string;
   paddingLeft?: string;
   opacity?: string;
+  textShadow?: string;
+  boxShadow?: string;
+  letterSpacing?: string;
+  textTransform?: string;
+  backgroundImage?: string;
+  backgroundClip?: string;
+  backgroundSize?: string;
+  borderBottom?: string;
+  verticalAlign?: string;
+  textStroke?: string;
+  textFillColor?: string;
+  filter?: string;
+  animation?: string;
+  hover?: StyleRule;
+  before?: Record<string, string>;
+  after?: Record<string, string>;
 }
 
 /** 多语言文本（支持中英文） */
@@ -82,12 +101,22 @@ export interface ColorToken {
   desc?: I18nText | string;
 }
 
+/** 色板预设条目（YAML palettes 区块） */
+export interface PalettePreset {
+  /** 预设名（多语言） */
+  name: I18nText | string;
+  /** 令牌覆盖映射（只覆盖列出的令牌，其余沿用默认 colors） */
+  tokens: Record<string, ColorToken>;
+}
+
 /** 主题配色配置文件 */
 export interface ThemeColorConfig {
   /** 颜色令牌定义区 — 定义所有可用颜色，可无限扩展 */
   colors?: Record<string, ColorToken>;
   /** 样式规则区 — 每条规则引用颜色令牌名 */
   styleRules: Record<string, StyleRule>;
+  /** 色板预设区 — 整套令牌覆盖，一键切换（v2.9） */
+  palettes?: Record<string, PalettePreset>;
 }
 
 /** 优先级配置文件 */
@@ -129,6 +158,8 @@ export interface CompiledLexicon {
   cssClass: string;
   /** 优先级 */
   priority: number;
+  /** 原始词汇列表（供词汇令牌预览/统计使用） */
+  words: string[];
 }
 
 /** 上下文映射条目 */
@@ -153,6 +184,8 @@ export interface RuleSet {
   contextRules: ContextRule[];
   /** 颜色令牌定义（来自 YAML colors 区块，可无限扩展） */
   colorTokens: Record<string, ColorToken>;
+  /** 色板预设映射（来自 YAML palettes 区块，v2.9） */
+  palettes: Record<string, PalettePreset>;
   /** 样式规则映射 */
   styleRules: Record<string, StyleRule>;
   /** 扫描状态枚举 */
@@ -283,6 +316,8 @@ export interface RuleMatchResult {
   block: boolean;
   /** 规则 ID */
   ruleId: string;
+  /** 资源引用序号（如 @图1 的 "1"，用于角标显示） */
+  refIndex?: string;
 }
 
 // ============================================================

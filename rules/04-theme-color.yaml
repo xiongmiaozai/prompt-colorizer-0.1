@@ -72,11 +72,6 @@ colors:
     desc: { zh: "括号注释、弱化标记", en: "Parenthetical notes, weak markers" }
 
   # ---- 扩展令牌 ----
-  violet:
-    light: "#7c3aed"
-    dark: "#818cf8"
-    name: { zh: "深紫（ANTML/AI 语法）", en: "Violet (ANTML)" }
-    desc: { zh: "ANTML 标签、AI 工具语法", en: "ANTML tags, AI syntax" }
   indigo:
     light: "#6366f1"
     dark: "#818cf8"
@@ -97,120 +92,17 @@ colors:
     dark: "#e2e8f0"
     name: { zh: "深石板（标题）", en: "Dark Slate (Heading)" }
     desc: { zh: "Markdown 标题", en: "Markdown headings" }
-  blue:
-    light: "#2563eb"
-    dark: "#60a5fa"
-    name: { zh: "蓝色（链接/邮箱）", en: "Blue (Link)" }
-    desc: { zh: "链接、邮箱地址", en: "Links, email addresses" }
-  slategray:
-    light: "#475569"
-    dark: "#94a3b8"
-    name: { zh: "中灰（文件路径/Kbd）", en: "Slate Gray (Path)" }
-    desc: { zh: "文件路径、键盘快捷键", en: "File paths, keyboard shortcuts" }
-  sky:
-    light: "#0284c7"
-    dark: "#0ea5e9"
-    name: { zh: "天蓝（时间戳/地理）", en: "Sky (Timestamp)" }
-    desc: { zh: "时间戳、地理坐标", en: "Timestamps, coordinates" }
-  indigodeep:
-    light: "#4f46e5"
-    dark: "#6366f1"
-    name: { zh: "深靛蓝（构图/法律）", en: "Indigo Deep (Composition)" }
-    desc: { zh: "构图术语、法律术语", en: "Composition, legal terms" }
-  fuchsia:
-    light: "#c026d3"
-    dark: "#e879f9"
-    name: { zh: "品红（音乐/时尚）", en: "Fuchsia (Music)" }
-    desc: { zh: "音乐音频、时尚设计", en: "Music audio, fashion design" }
-  teal:
-    light: "#0d9488"
-    dark: "#2dd4bf"
-    name: { zh: "青绿（数据科学/教育）", en: "Teal (Data)" }
-    desc: { zh: "数据科学、教育学术语", en: "Data science, education terms" }
-  rose:
-    light: "#e11d48"
-    dark: "#fb7185"
-    name: { zh: "玫瑰红（医学）", en: "Rose (Medical)" }
-    desc: { zh: "医学术语", en: "Medical terms" }
-  lime:
-    light: "#65a30d"
-    dark: "#a3e635"
-    name: { zh: "黄绿（地理/农业）", en: "Lime (Geography)" }
-    desc: { zh: "地理/GIS、农业术语", en: "Geography, agriculture terms" }
-  green:
-    light: "#16a34a"
-    dark: "#22c55e"
-    name: { zh: "绿色（化学/生物）", en: "Green (Chemistry)" }
-    desc: { zh: "化学、生物学术语", en: "Chemistry, biology terms" }
-  slatelight:
-    light: "#cbd5e1"
-    dark: "#475569"
-    name: { zh: "浅灰（分割线）", en: "Slate Light (Separator)" }
-    desc: { zh: "水平分割线、表格分隔", en: "Horizontal rules, separators" }
   yellow:
     light: "#facc15"
     dark: "#fde047"
     name: { zh: "黄色（高亮）", en: "Yellow (Highlight)" }
     desc: { zh: "高亮标记", en: "Highlight markers" }
 
-  # ---- 分镜脚本扩展令牌（v2.3.0 新增）----
-  segment:
-    light: "#be185d"
-    dark: "#f472b6"
-    name: { zh: "深红（段落标题）", en: "Segment (Header)" }
-    desc: { zh: "分镜段落标题（A 段/B 段）", en: "Shot segment headers" }
-  module:
-    light: "#0e7490"
-    dark: "#22d3ee"
-    name: { zh: "深青（模块标题）", en: "Module (Header)" }
-    desc: { zh: "分镜模块标题（模块 1/2/3）", en: "Shot module headers" }
-  reference:
-    light: "#6d28d9"
-    dark: "#a78bfa"
-    name: { zh: "深紫罗兰（引用）", en: "Reference (Cite)" }
-    desc: { zh: "书名号引用、影视对标", en: "Book titles, references" }
-
-  # ---- v2.4.0 多模态扩展令牌 ----
   music:
     light: "#c026d3"
     dark: "#e879f9"
     name: { zh: "品红（音乐生成）", en: "Music (Magenta)" }
     desc: { zh: "Suno 歌词段落、音乐元标签", en: "Suno lyrics, music meta tags" }
-  avatar:
-    light: "#ec4899"
-    dark: "#f472b6"
-    name: { zh: "粉色（数字人）", en: "Avatar (Pink)" }
-    desc: { zh: "数字人情绪、手势指令", en: "Avatar emotion, gesture" }
-  tts:
-    light: "#f97316"
-    dark: "#fb923c"
-    name: { zh: "橙色（语音合成）", en: "TTS (Orange)" }
-    desc: { zh: "SSML 标签、TTS 情绪", en: "SSML tags, TTS emotion" }
-  agent:
-    light: "#7c3aed"
-    dark: "#818cf8"
-    name: { zh: "深紫（Agent）", en: "Agent (Violet)" }
-    desc: { zh: "ReAct 标记、CoT 触发", en: "ReAct markers, CoT triggers" }
-  excel:
-    light: "#059669"
-    dark: "#10b981"
-    name: { zh: "翠绿（Excel AI）", en: "Excel (Emerald)" }
-    desc: { zh: "Copilot 函数、Excel AI", en: "Copilot formulas, Excel AI" }
-  gen3d:
-    light: "#0891b2"
-    dark: "#22d3ee"
-    name: { zh: "青色（3D 生成）", en: "3D Gen (Cyan)" }
-    desc: { zh: "3D 生成平台标识", en: "3D gen platform tags" }
-  comfyui:
-    light: "#0d9488"
-    dark: "#2dd4bf"
-    name: { zh: "青绿（ComfyUI）", en: "ComfyUI (Teal)" }
-    desc: { zh: "ComfyUI 节点调用", en: "ComfyUI node calls" }
-  runway:
-    light: "#6366f1"
-    dark: "#818cf8"
-    name: { zh: "靛蓝（Runway/Pika）", en: "Runway (Indigo)" }
-    desc: { zh: "Runway/Pika 视频参数", en: "Runway/Pika video params" }
 
 # ============================================================
 # 样式规则区 — 每条规则引用颜色令牌名
@@ -227,18 +119,41 @@ styleRules:
   dsl-block-wrapper:
     color: "purple"
     fontWeight: "bold"
-    background: "purple.soft"
+    fontSize: "1.05em"
+    letterSpacing: "0.08em"
+    backgroundImage: "linear-gradient(135deg, purple.soft, indigo.soft)"
     border: "1px solid purple.border"
     borderRadius: "8px"
     padding: "1px 12px"
+    # 悬停色相偏移：hover 时整块旋转 30° 色相（项 9）
+    hover:
+      filter: "hue-rotate(30deg) saturate(1.15)"
+
 
   dsl-shot-header:
-    color: "cyan"
     fontWeight: "bold"
+    # 彩虹流动：多色渐变文字 + 背景滚动动画（pc-rainbow-flow keyframes 由引擎按需注入）
+    backgroundImage: "linear-gradient(90deg, cyan, info, purple, pink, cyan)"
+    backgroundSize: "200% 100%"
+    backgroundClip: "text"
+    animation: "pc-rainbow-flow 6s linear infinite"
+    textShadow: "cyan.glow"
 
   dsl-asset:
     color: "amber"
     fontWeight: "600"
+    before:
+      content: '"▸ "'
+      color: "amber"
+      fontSize: "0.85em"
+    after:
+      content: "attr(data-ref)"
+      color: "amber"
+      fontSize: "0.65em"
+      fontWeight: "600"
+      verticalAlign: "super"
+      marginLeft: "1px"
+      opacity: "0.8"
 
   dsl-asset-bracket:
     color: "amber"
@@ -247,6 +162,7 @@ styleRules:
   dsl-param-key:
     color: "info"
     fontWeight: "600"
+    borderBottom: "2px solid info.border"
 
   dsl-dialogue:
     color: "success"
@@ -254,6 +170,8 @@ styleRules:
     background: "success.soft"
     borderRadius: "4px"
     padding: "0 2px"
+    hover:
+      background: "success.border"
 
   # 中文引号「」『』弱化（v2.4.1 新增，突出引号内台词）
   dsl-dialogue-quote:
@@ -263,6 +181,7 @@ styleRules:
   dsl-constraint:
     color: "danger"
     fontWeight: "600"
+    textDecoration: "line-through"
     background: "danger.soft"
     borderRadius: "4px"
     padding: "0 2px"
@@ -270,6 +189,7 @@ styleRules:
   dsl-tech-param:
     color: "warning"
     fontWeight: "600"
+    borderBottom: "2px solid warning.border"
 
   dsl-parenthetical:
     color: "paren"
@@ -279,14 +199,25 @@ styleRules:
   dsl-variable:
     color: "warning"
     fontWeight: "600"
+    fontFamily: "monospace"
+    textDecoration: "underline wavy warning"
 
   dsl-role-tag:
     color: "purple"
     fontWeight: "bold"
+    fontFamily: "monospace"
+    fontSize: "0.92em"
+    opacity: "0.85"
+    letterSpacing: "0.05em"
 
   dsl-instruction:
-    color: "purple"
+    color: "var(--text-on-accent, #ffffff)"
+    background: "purple"
     fontWeight: "bold"
+    fontFamily: "monospace"
+    borderRadius: "4px"
+    padding: "0 3px"
+
 
   # ============================================================
   # 二、SD/ComfyUI 扩展
@@ -294,9 +225,12 @@ styleRules:
   dsl-emphasis-weight:
     color: "warning"
     fontWeight: "600"
+    fontFamily: "monospace"
     background: "warning.soft"
     borderRadius: "4px"
     padding: "0 2px"
+    hover:
+      background: "warning.border"
 
   dsl-lora-ref:
     color: "amber"
@@ -304,33 +238,38 @@ styleRules:
     background: "amber.soft"
     borderRadius: "4px"
     padding: "0 2px"
+    hover:
+      background: "amber.border"
 
   dsl-bracket-strong:
     color: "info"
     fontWeight: "bold"
 
   dsl-bracket-weak:
-    color: "paren"
+    textStroke: "1px paren"
+    textFillColor: "transparent"
     opacity: "0.75"
 
   dsl-quality-tag:
     color: "success"
     fontWeight: "600"
+    backgroundImage: "linear-gradient(to top, success.soft 45%, transparent 45%)"
 
   dsl-sd-negative-header:
     color: "danger"
     fontWeight: "bold"
-    background: "danger.soft"
+    textShadow: "danger.glow"
+    backgroundImage: "linear-gradient(to right, danger.soft, transparent)"
     borderLeft: "3px solid danger"
     paddingLeft: "12px"
     borderRadius: "0 4px 4px 0"
 
   # SD 参数标记：--ar 16:9 --v 6
   dsl-sd-parameter:
-    color: "violet"
+    color: "purple"
     fontWeight: "600"
     fontFamily: "monospace"
-    background: "violet.soft"
+    background: "purple.soft"
     borderRadius: "3px"
     padding: "0 3px"
 
@@ -353,11 +292,12 @@ styleRules:
   # ============================================================
   # ANTML 命名空间标签（最高优先级强调）
   dsl-antml-tag:
-    color: "violet"
+    color: "purple"
     fontWeight: "bold"
-    background: "violet.soft"
+    background: "purple.soft"
     borderRadius: "4px"
     padding: "0 2px"
+
 
   dsl-function-results:
     color: "purple"
@@ -450,6 +390,7 @@ styleRules:
     color: "darkslate"
     fontWeight: "bold"
 
+
   # 粗体
   dsl-md-bold:
     fontWeight: "bold"
@@ -481,7 +422,7 @@ styleRules:
 
   # 链接
   dsl-md-link:
-    color: "blue"
+    color: "info"
     textDecoration: "underline"
 
   # 图片
@@ -491,12 +432,12 @@ styleRules:
 
   # Wiki 链接
   dsl-md-wiki-link:
-    color: "blue"
+    color: "info"
     fontWeight: "500"
 
   # 标签 #tag
   dsl-md-tag:
-    color: "violet"
+    color: "purple"
     fontWeight: "500"
 
   # 任务列表标记
@@ -509,6 +450,7 @@ styleRules:
     color: "indigo"
     fontWeight: "500"
     fontSize: "0.85em"
+    verticalAlign: "super"
 
   # 脚注定义
   dsl-md-footnote-def:
@@ -517,12 +459,12 @@ styleRules:
 
   # 数学公式块
   dsl-md-math:
-    color: "violet"
+    color: "purple"
     fontWeight: "bold"
 
   # 行内数学公式
   dsl-md-math-inline:
-    color: "violet"
+    color: "purple"
 
   # 引用块
   dsl-md-blockquote:
@@ -535,13 +477,14 @@ styleRules:
   dsl-md-callout:
     color: "warning"
     fontWeight: "bold"
-    background: "warning.soft"
+    backgroundImage: "linear-gradient(135deg, warning.soft, amber.soft)"
     borderRadius: "4px"
     padding: "0 4px"
 
+
   # 水平分割线
   dsl-md-hr:
-    color: "slatelight"
+    color: "paren"
     opacity: "0.50"
 
   # 表格分隔行
@@ -551,7 +494,7 @@ styleRules:
 
   # 表格行
   dsl-md-table-row:
-    color: "slategray"
+    color: "slate"
     fontFamily: "monospace"
 
   # 列表项
@@ -575,6 +518,8 @@ styleRules:
     color: "paren"
     fontStyle: "italic"
     opacity: "0.50"
+    fontSize: "0.92em"
+    backgroundImage: "repeating-linear-gradient(45deg, paren.soft 0 2px, transparent 2px 6px)"
 
   # Emoji 短码
   dsl-md-emoji:
@@ -595,7 +540,7 @@ styleRules:
   # 五、操作档案扩展标记
   # ============================================================
   dsl-email:
-    color: "blue"
+    color: "info"
     fontWeight: "500"
 
   dsl-ip-address:
@@ -645,26 +590,26 @@ styleRules:
   # ============================================================
   # 时间戳
   dsl-timestamp:
-    color: "sky"
+    color: "cyan"
     fontWeight: "500"
     fontFamily: "monospace"
 
   # 版本号
   dsl-version-number:
-    color: "violet"
+    color: "purple"
     fontWeight: "600"
     fontFamily: "monospace"
 
   # URL 链接
   dsl-url-link:
-    color: "blue"
+    color: "info"
     textDecoration: "underline"
 
   # 文件路径
   dsl-file-path:
-    color: "slategray"
+    color: "slate"
     fontFamily: "monospace"
-    background: "slategray.soft"
+    background: "slate.soft"
     borderRadius: "3px"
     padding: "0 2px"
 
@@ -676,16 +621,18 @@ styleRules:
     background: "emerald.soft"
     borderRadius: "4px"
     padding: "0 4px"
+    boxShadow: "0 1px 4px emerald.soft"
 
   # 键盘快捷键
   dsl-kbd-tag:
-    color: "slategray"
+    color: "slate"
     fontWeight: "600"
     fontFamily: "monospace"
-    background: "slategray.soft"
+    background: "slate.soft"
     borderRadius: "4px"
     padding: "1px 6px"
-    border: "1px solid slategray.border"
+    border: "1px solid slate.border"
+    boxShadow: "0 2px 4px slate.soft"
 
   # HTML 标签
   dsl-html-tag:
@@ -705,7 +652,7 @@ styleRules:
 
   # 分隔标记
   dsl-separator:
-    color: "slatelight"
+    color: "paren"
     opacity: "0.50"
 
   # ============================================================
@@ -746,7 +693,7 @@ styleRules:
 
   # 摄影 - 蓝色系
   dsl-photography-term:
-    color: "blue"
+    color: "info"
     fontWeight: "600"
 
   # 艺术风格 - 粉色系
@@ -762,12 +709,12 @@ styleRules:
 
   # 构图 - 靛蓝系
   dsl-composition-term:
-    color: "indigodeep"
+    color: "indigo"
     fontWeight: "500"
 
   # 音乐音频 - 紫红系
   dsl-music-audio-term:
-    color: "fuchsia"
+    color: "music"
     fontWeight: "500"
 
   # 编程 - 绿色系
@@ -778,7 +725,7 @@ styleRules:
 
   # 数据科学 - 青绿系
   dsl-data-science-term:
-    color: "teal"
+    color: "cyan"
     fontWeight: "600"
 
   # 叙事写作 - 琥珀系
@@ -794,7 +741,7 @@ styleRules:
 
   # 游戏开发 - 紫色系
   dsl-game-dev-term:
-    color: "violet"
+    color: "purple"
     fontWeight: "600"
 
   # 质量标签 - 绿色系
@@ -810,12 +757,12 @@ styleRules:
 
   # 医学 - 玫红系
   dsl-medical-term:
-    color: "rose"
+    color: "danger"
     fontWeight: "500"
 
   # 法律 - 靛蓝系
   dsl-legal-term:
-    color: "indigodeep"
+    color: "indigo"
     fontWeight: "600"
 
   # 金融 - 翠绿系
@@ -825,12 +772,12 @@ styleRules:
 
   # 建筑 - 石板灰系
   dsl-architecture-term:
-    color: "slategray"
+    color: "slate"
     fontWeight: "500"
 
   # 时尚 - 粉紫系
   dsl-fashion-term:
-    color: "fuchsia"
+    color: "music"
     fontWeight: "500"
     fontStyle: "italic"
 
@@ -849,7 +796,7 @@ styleRules:
   # ============================================================
   # UI/UX 设计 - 蓝色系
   dsl-ui-ux-term:
-    color: "blue"
+    color: "info"
     fontWeight: "600"
 
   # 3D建模/CG - 青色系
@@ -859,7 +806,7 @@ styleRules:
 
   # 影视后期/VFX - 紫色系
   dsl-vfx-term:
-    color: "violet"
+    color: "purple"
     fontWeight: "600"
 
   # 动效设计 - 粉色系
@@ -874,7 +821,7 @@ styleRules:
 
   # 教育学 - 蓝绿系
   dsl-education-term:
-    color: "teal"
+    color: "cyan"
     fontWeight: "500"
 
   # 心理学 - 紫色系
@@ -885,7 +832,7 @@ styleRules:
 
   # 化学 - 绿色系
   dsl-chemistry-term:
-    color: "green"
+    color: "success"
     fontWeight: "500"
 
   # 生物学 - 翠绿系
@@ -895,17 +842,17 @@ styleRules:
 
   # 地理/GIS - 黄绿系
   dsl-geography-term:
-    color: "lime"
+    color: "success"
     fontWeight: "500"
 
   # 航空航天 - 天蓝系
   dsl-aerospace-term:
-    color: "sky"
+    color: "cyan"
     fontWeight: "600"
 
   # 军事 - 暗灰系
   dsl-military-term:
-    color: "slategray"
+    color: "slate"
     fontWeight: "600"
 
   # 体育/运动科学 - 橙色系
@@ -915,18 +862,19 @@ styleRules:
 
   # 农业 - 草绿系
   dsl-agriculture-term:
-    color: "green"
+    color: "success"
     fontWeight: "500"
 
   # ============================================================
   # 八、分镜脚本扩展样式（v2.3.0 新增）
   # ============================================================
   dsl-segment-header:
-    color: "segment"
+    color: "danger"
     fontWeight: "bold"
     fontSize: "1.1em"
+    textShadow: "danger.glow"
   dsl-module-header:
-    color: "module"
+    color: "cyan"
     fontWeight: "bold"
   dsl-dialogue-speaker:
     color: "info"
@@ -935,19 +883,20 @@ styleRules:
     color: "purple"
     fontWeight: "bold"
   dsl-book-title:
-    color: "reference"
+    color: "purple"
     fontStyle: "italic"
   dsl-cn-chapter:
     color: "darkslate"
     fontWeight: "bold"
     fontSize: "1.15em"
+
   dsl-time-range:
     color: "warning"
   dsl-section-note:
     color: "slate"
     fontWeight: "bold"
   dsl-lexicon-blocking:
-    color: "indigodeep"
+    color: "indigo"
   dsl-lexicon-camera-fixed:
     color: "cyan"
   dsl-lexicon-shot-size:
@@ -969,9 +918,9 @@ styleRules:
   # ============================================================
   # SSML 语音合成标签
   dsl-ssml-tag:
-    color: "tts"
+    color: "orange"
     fontWeight: "bold"
-    background: "tts.soft"
+    background: "orange.soft"
     borderRadius: "4px"
     padding: "0 2px"
 
@@ -993,68 +942,70 @@ styleRules:
 
   # 数字人指令标签 [emotion]happy[/emotion]
   dsl-avatar-directive:
-    color: "avatar"
+    color: "pink"
     fontWeight: "bold"
-    background: "avatar.soft"
+    background: "pink.soft"
     borderRadius: "4px"
     padding: "0 2px"
 
   # Excel Copilot 函数 =COPILOT(...)
   dsl-copilot-formula:
-    color: "excel"
+    color: "emerald"
     fontWeight: "bold"
     fontFamily: "monospace"
-    background: "excel.soft"
+    background: "emerald.soft"
     borderRadius: "4px"
     padding: "0 4px"
 
   # ReAct Agent 标记 Thought: / Action:
   dsl-react-marker:
-    color: "agent"
+    color: "purple"
     fontWeight: "bold"
-    background: "agent.soft"
+    background: "purple.soft"
     borderRadius: "4px"
     padding: "0 6px"
+    boxShadow: "0 2px 6px purple.soft"
 
   # CoT 触发短语
   dsl-cot-trigger:
-    color: "agent"
+    color: "purple"
     fontWeight: "600"
     fontStyle: "italic"
-    background: "agent.soft"
+    background: "purple.soft"
     borderRadius: "4px"
     padding: "0 2px"
 
   # AI 模型标识符 gpt-4、claude-3
   dsl-model-identifier:
-    color: "violet"
+    color: "purple"
     fontWeight: "600"
     fontFamily: "monospace"
 
   # ComfyUI 节点调用 KSampler(...)
   dsl-comfyui-node:
-    color: "comfyui"
+    color: "cyan"
     fontWeight: "bold"
     fontFamily: "monospace"
-    background: "comfyui.soft"
+    background: "cyan.soft"
     borderRadius: "4px"
     padding: "0 3px"
+    boxShadow: "0 1px 4px cyan.soft"
 
   # Pika 视频参数 --camera
   dsl-pika-parameter:
-    color: "runway"
+    color: "indigo"
     fontWeight: "600"
     fontFamily: "monospace"
-    background: "runway.soft"
+    background: "indigo.soft"
     borderRadius: "3px"
     padding: "0 3px"
 
   # Runway Gen 参数
   dsl-runway-parameter:
-    color: "runway"
+    color: "indigo"
     fontWeight: "600"
     fontFamily: "monospace"
-    background: "runway.soft"
+    background: "indigo.soft"
     borderRadius: "3px"
     padding: "0 3px"
 
@@ -1062,6 +1013,7 @@ styleRules:
   dsl-translation-marker:
     color: "purple"
     fontWeight: "bold"
+
 
   # Few-shot 示例标记 Example: / Q:
   dsl-fewshot-marker:
@@ -1073,9 +1025,9 @@ styleRules:
 
   # 3D 生成平台标识 [Meshy] [Hunyuan3D]
   dsl-gen3d-platform:
-    color: "gen3d"
+    color: "cyan"
     fontWeight: "bold"
-    background: "gen3d.soft"
+    background: "cyan.soft"
     borderRadius: "4px"
     padding: "0 4px"
 
@@ -1084,21 +1036,21 @@ styleRules:
     color: "music"
     fontWeight: "600"
   dsl-lexicon-avatar-emotion:
-    color: "avatar"
+    color: "pink"
     fontWeight: "500"
   dsl-lexicon-avatar-gesture:
-    color: "avatar"
+    color: "pink"
     fontWeight: "500"
     fontStyle: "italic"
   dsl-lexicon-tts-emotion:
-    color: "tts"
+    color: "orange"
     fontWeight: "500"
   dsl-lexicon-interior-style:
-    color: "slategray"
+    color: "slate"
     fontWeight: "500"
     fontStyle: "italic"
   dsl-lexicon-logo-style:
-    color: "indigodeep"
+    color: "indigo"
     fontWeight: "500"
 
   # ============================================================
@@ -1139,3 +1091,60 @@ styleRules:
     color: "pink"
     fontStyle: "italic"
     fontWeight: "500"
+
+# ============================================================
+# 色板预设（v2.9 色彩玩法）— 一键切换整套令牌配色
+# 用法：设置 → 颜色管理 → 色板预设 选择某套 palettes
+# 每套为部分令牌的 light/dark 覆盖，未覆盖令牌沿用默认 colors 区
+# ============================================================
+palettes:
+  # 马卡龙 — 低饱和糖果色，日常写作柔和护眼
+  macaron:
+    name: { zh: "马卡龙", en: "Macaron" }
+    tokens:
+      danger:   { light: "#e11d48", dark: "#fb7185" }
+      success: { light: "#2dd4bf", dark: "#5eead4" }
+      warning: { light: "#fbbf24", dark: "#fcd34d" }
+      info:    { light: "#93c5fd", dark: "#bfdbfe" }
+      purple:  { light: "#c4b5fd", dark: "#ddd6fe" }
+      cyan:    { light: "#a5f3fc", dark: "#cffafe" }
+      pink:    { light: "#f9a8d4", dark: "#fbcfe8" }
+      amber:   { light: "#fdba74", dark: "#fed7aa" }
+  # 荧光 — 高饱和霓虹，暗色模式赛博感
+  neon:
+    name: { zh: "荧光霓虹", en: "Neon" }
+    tokens:
+      danger:   { light: "#ff0040", dark: "#ff2266" }
+      success: { light: "#00ff88", dark: "#00ff9d" }
+      warning: { light: "#ffe600", dark: "#fff03d" }
+      info:    { light: "#00cfff", dark: "#22d3ee" }
+      purple:  { light: "#bf00ff", dark: "#c026d3" }
+      cyan:    { light: "#00e5ff", dark: "#00e5ff" }
+      pink:    { light: "#ff2e88", dark: "#ff4d9d" }
+      amber:   { light: "#ff9500", dark: "#ffaa33" }
+  # 莫兰迪 — 灰调高级感，印刷阅读
+  morandi:
+    name: { zh: "莫兰迪灰调", en: "Morandi" }
+    tokens:
+      danger:   { light: "#a26363", dark: "#c08484" }
+      success: { light: "#7ba182", dark: "#9cbfa4" }
+      warning: { light: "#b8a37e", dark: "#cabfa0" }
+      info:    { light: "#6d85a8", dark: "#8fa5c2" }
+      purple:  { light: "#9a7fa1", dark: "#b09ab5" }
+      cyan:    { light: "#67949e", dark: "#84acB5" }
+      pink:    { light: "#ab7b8f", dark: "#bf96a8" }
+      amber:   { light: "#a58e6d", dark: "#bda685" }
+  # 落日 — 暖橙调，创作氛围
+  sunset:
+    name: { zh: "落日暖调", en: "Sunset" }
+    tokens:
+      danger:   { light: "#dc2626", dark: "#f87171" }
+      success: { light: "#65a30d", dark: "#a3e635" }
+      warning: { light: "#ea580c", dark: "#fb923c" }
+      info:    { light: "#0284c7", dark: "#38bdf8" }
+      purple:  { light: "#9333ea", dark: "#c084fc" }
+      cyan:    { light: "#0e7490", dark: "#06b6d4" }
+      pink:    { light: "#db2777", dark: "#f472b6" }
+      amber:   { light: "#b45309", dark: "#f59e0b" }
+
+
