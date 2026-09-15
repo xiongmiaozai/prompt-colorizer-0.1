@@ -1,0 +1,141 @@
+[
+  {
+    "id": "md_hr",
+    "name": "水平分割线",
+    "regex": "",
+    "cssClass": "dsl-md-hr",
+    "priority": 30
+  },
+  {
+    "id": "md_comment",
+    "name": "注释",
+    "regex": "",
+    "cssClass": "dsl-md-comment",
+    "priority": 30
+  },
+  {
+    "id": "md_definition",
+    "name": "定义列表",
+    "regex": "",
+    "cssClass": "dsl-md-definition",
+    "priority": 30
+  },
+  {
+    "id": "md_block_id",
+    "name": "块 ID",
+    "regex": "",
+    "cssClass": "dsl-md-block-id",
+    "priority": 30
+  },
+  {
+    "id": "reference_marker",
+    "name": "引用标记",
+    "regex": "",
+    "cssClass": "dsl-reference-marker",
+    "priority": 30
+  },
+  {
+    "id": "sym_arrow",
+    "name": "箭头符号",
+    "regex": "[→←↑↓↔↕⇒⇐⇑⇓⇔⟶⟵⟷]",
+    "flags": "g",
+    "cssClass": "dsl-sym-arrow",
+    "priority": 22
+  },
+  {
+    "id": "sym_bullet",
+    "name": "项目标记符号",
+    "regex": "[•◦▪▫★☆]",
+    "flags": "g",
+    "cssClass": "dsl-sym-bullet",
+    "priority": 18
+  },
+  {
+    "id": "sym_circlenum",
+    "name": "圆圈编号",
+    "regex": "[①②③④⑤⑥⑦⑧⑨⑩⑪⑫]",
+    "flags": "g",
+    "cssClass": "dsl-sym-circlenum",
+    "priority": 24
+  },
+  {
+    "id": "sym_ellipsis",
+    "name": "省略破折号",
+    "regex": "[…⋯]",
+    "flags": "g",
+    "cssClass": "dsl-sym-ellipsis",
+    "priority": 15
+  },
+  {
+    "id": "sym_progress",
+    "name": "进度条字符",
+    "regex": "[▰▱█▌▐▏▎]",
+    "flags": "g",
+    "cssClass": "dsl-sym-progress",
+    "priority": 16
+  },
+  {
+    "id": "sym_copyright",
+    "name": "版权商标符号",
+    "regex": "[©®™℠]",
+    "flags": "g",
+    "cssClass": "dsl-sym-copyright",
+    "priority": 15
+  },
+  {
+    "id": "sym_currency",
+    "name": "货币符号",
+    "regex": "[€£¥₹₽¢¤]",
+    "flags": "g",
+    "cssClass": "dsl-sym-currency",
+    "priority": 25
+  },
+  {
+    "id": "sym_degree",
+    "name": "度数温度符号",
+    "regex": "°",
+    "flags": "g",
+    "cssClass": "dsl-sym-degree",
+    "priority": 25
+  },
+  {
+    "id": "sym_weather",
+    "name": "天气装饰符号",
+    "regex": "[☀☁☂☃☄☾⛅]",
+    "flags": "g",
+    "cssClass": "dsl-sym-weather",
+    "priority": 20
+  },
+  {
+    "id": "sym_music",
+    "name": "音乐符号",
+    "regex": "[♩♪♫♬♭♮♯]",
+    "flags": "g",
+    "cssClass": "dsl-sym-music",
+    "priority": 22
+  },
+  {
+    "id": "sym_warning",
+    "name": "警告危险符号",
+    "regex": "[⚠⚡⛔☢☣☠✖✗]",
+    "flags": "g",
+    "cssClass": "dsl-sym-warning",
+    "priority": 40
+  },
+  {
+    "id": "sym_suit",
+    "name": "扑克棋子符号",
+    "regex": "[♠♥♦♣♔♕♖♗♘♙♚♛]",
+    "flags": "g",
+    "cssClass": "dsl-sym-suit",
+    "priority": 18
+  },
+  {
+    "id": "sym_bracket_cn",
+    "name": "中文括号符号",
+    "regex": "[【】（）]",
+    "flags": "g",
+    "cssClass": "dsl-sym-bracket-cn",
+    "priority": 15
+  }
+]

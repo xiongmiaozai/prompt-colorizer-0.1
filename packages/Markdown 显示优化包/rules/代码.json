@@ -1,0 +1,47 @@
+[
+  {
+    "id": "md_code_fence",
+    "name": "代码块围栏",
+    "regex": "",
+    "cssClass": "dsl-md-code-fence",
+    "priority": 30
+  },
+  {
+    "id": "md_inline_code",
+    "name": "行内代码",
+    "regex": "",
+    "cssClass": "dsl-md-inline-code",
+    "priority": 30
+  },
+  {
+    "id": "md_mermaid",
+    "name": "图表代码块",
+    "regex": "",
+    "cssClass": "dsl-md-mermaid",
+    "priority": 30
+  },
+  {
+    "id": "sym_codeop",
+    "name": "代码运算符",
+    "regex": "(?:!=|>=|<=|&&|\\|\\||//|\\+\\+|--|->|=>|::)",
+    "flags": "g",
+    "cssClass": "dsl-sym-codeop",
+    "priority": 35
+  },
+  {
+    "id": "sym_box",
+    "name": "制表线框",
+    "regex": "[─│┌┐└┘├┤┬┴┼━┃┏┓┗┛┣┫┳┻╋]",
+    "flags": "g",
+    "cssClass": "dsl-sym-box",
+    "priority": 20
+  },
+  {
+    "id": "sym_plus",
+    "name": "加号",
+    "regex": "\\+",
+    "flags": "g",
+    "cssClass": "dsl-sym-plus",
+    "priority": 14
+  }
+]

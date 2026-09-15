@@ -1,0 +1,48 @@
+[
+  {
+    "id": "md_math_inline",
+    "name": "行内公式",
+    "regex": "",
+    "cssClass": "dsl-md-math-inline",
+    "priority": 30
+  },
+  {
+    "id": "md_math_block",
+    "name": "块级公式",
+    "regex": "",
+    "cssClass": "dsl-md-math-block",
+    "priority": 30
+  },
+  {
+    "id": "sym_logic",
+    "name": "逻辑符号",
+    "regex": "[∀∃¬∧∨→↔⊨⊢⇒⇔∴∵]",
+    "flags": "g",
+    "cssClass": "dsl-sym-logic",
+    "priority": 30
+  },
+  {
+    "id": "sym_math",
+    "name": "数学符号",
+    "regex": "[±×÷≠≈≤≥∞∑∏∫√∂∇∝≡]",
+    "flags": "g",
+    "cssClass": "dsl-sym-math",
+    "priority": 30
+  },
+  {
+    "id": "sym_greek",
+    "name": "希腊字母",
+    "regex": "[αβγδεζηθικλμνξπρστυφχψωΑΒΓΔΣΠΩΛΦΨΘΞ]",
+    "flags": "g",
+    "cssClass": "dsl-sym-greek",
+    "priority": 28
+  },
+  {
+    "id": "sym_set",
+    "name": "集合符号",
+    "regex": "[∪∩⊂⊆⊃⊇∅⊕⊗]",
+    "flags": "g",
+    "cssClass": "dsl-sym-set",
+    "priority": 30
+  }
+]

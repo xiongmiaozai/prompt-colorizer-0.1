@@ -6,6 +6,8 @@
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
+    "sync-rules": "node scripts/sync-builtin-rules.mjs",
+    "prebuild": "npm run sync-rules",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "version": "node version-bump.mjs"
   },

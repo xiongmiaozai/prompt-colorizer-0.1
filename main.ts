@@ -16,7 +16,8 @@
 
 import { Plugin, WorkspaceLeaf, Notice, Editor, Menu, MarkdownView, TFile } from 'obsidian';
 import { Extension } from '@codemirror/state';
-import type { PromptColorizerSettings, CustomTextColor } from './src/types';
+import type { PromptColorizerSettings, CustomTextColor, CustomRuleDef, PackageManifest } from './src/types';
+import { PACKAGE_SPEC_VERSION } from './src/types';
 import { DEFAULT_SETTINGS, mergeSettings } from './src/settings/settings';
 import { PromptColorizerSettingTab } from './src/settings/setting-tab';
 import { createEditorExtension, collectAllMatches } from './src/highlighter/editor-extension';
@@ -44,6 +45,7 @@ import {
   findMatchingCustomColorIds,
 } from './src/highlighter/custom-text-colors';
 import { PackageManager } from './src/packages/package-manager';
+import { ruleIdToDef } from './src/packages/pkg-io';
 import { generatePackageOverrideCss } from './src/packages/package-override-css';
 import {
   exportFullSettings,
@@ -58,18 +60,11 @@ import { IntegrationManager } from './src/integrations';
 import { RuleMatcher } from './src/rule-engine/matcher';
 import { compileRuleSet, loadBuiltinRules, generateStyleCss, generateColorVariables, generateColorBlindAssistCss } from './src/rule-engine/rule-compiler';
 import { CSS_TO_KEY } from './src/highlighter/rule-key-map';
+import { getRuleDisplayName as getBuiltinRuleDisplayName } from './src/packages/rule-id-names';
 import type { RuleSet, StyleRule, ColorToken, RuleMatchResult } from './src/rule-engine/types';
 import type { LoadedPackage } from './src/types';
-import {
-  VOCAB_TOKEN_GROUPS,
-  VOCAB_CATEGORIES,
-  VOCAB_CLASS_TO_TOKEN,
-  TOKEN_TO_CATEGORY,
-  getVocabWords,
-} from './src/rule-engine/vocab-tokens';
-import type { VocabTokenInfo, VocabCategoryInfo } from './src/rule-engine/vocab-tokens';
 import { LocalCache } from './src/cache/local-cache';
-import { fetchRemoteVersion, fetchRuleFilesWithReport, compareVersions, calculateHash, parseRuleCategories, countLexiconTerms } from './src/fetcher/git-fetch';
+import { fetchRemoteVersion, fetchRuleFilesWithReport, compareVersions, calculateHash, parseRuleCategories } from './src/fetcher/git-fetch';
 import type { RemoteVersionInfo, LocalVersionInfo, PullReportData } from './src/rule-engine/types';
 
 export default class PromptColorizer extends Plugin {
@@ -80,8 +75,10 @@ export default class PromptColorizer extends Plugin {
   private matcher: RuleMatcher;
   /** 本地缓存管理器 */
   private cache: LocalCache;
-  /** 当前规则集 */
+  /** 当前规则集（运行时合并产物 = baseRuleSet + 启用包自定义规则；不持久化） */
   currentRuleSet: RuleSet | null = null;
+  /** 基础规则集（YAML 编译产物，不含包自定义规则；作为资源池供包驱动派生） */
+  private baseRuleSet: RuleSet | null = null;
   /** 自动更新定时器 ID */
   private autoUpdateTimerId: number | null = null;
   /** 动态注入的 DSL 样式元素 */
@@ -90,8 +87,7 @@ export default class PromptColorizer extends Plugin {
   private dslColorVarEl: HTMLStyleElement | null = null;
   /** 动态注入的自定义文本颜色样式元素（由 customTextColors 生成） */
   private customTextStyleEl: HTMLStyleElement | null = null;
-  /** 动态注入的词汇令牌颜色覆盖样式元素（由 vocabColors 生成） */
-  private vocabColorStyleEl: HTMLStyleElement | null = null;
+
   /** 包管理器（v5 包管理模块） */
   pkgManager: PackageManager;
   /** 已加载包缓存（导图面板与渲染覆盖层共用） */
@@ -118,7 +114,6 @@ export default class PromptColorizer extends Plugin {
     this.applyCustomTextColorsStyles();
 
     // 3.7 应用词汇令牌颜色覆盖样式
-    this.applyVocabColorStyles();
 
     // 4. 初始化规则引擎
     this.matcher = new RuleMatcher();
@@ -127,15 +122,21 @@ export default class PromptColorizer extends Plugin {
     // 5. 加载规则（同步优先加载内置规则，异步再更新）
     await this.initRules();
 
-    // 5.5 初始化包管理器：加载内置包 + 用户包，应用启用包样式覆盖层
-    this.pkgManager = new PackageManager(this.app, () => this.settings);
+    // 5.5 初始化包管理器：加载内置包 + 用户包（旧索引自动迁移为自包含分类文件），
+    //     包内嵌资源自动注册进全局本体，应用启用包样式覆盖层
+    this.pkgManager = new PackageManager(
+      this.app,
+      () => this.settings,
+      (id) => ruleIdToDef(this, id),
+      () => new Set((this.currentRuleSet?.rules ?? []).map((r) => r.id))
+    );
+    // 5.5.1 一次性迁移：旧全局令牌/规则 → 迁移包（包驱动前置）
+    await this.migrateLegacyGlobalResources();
     await this.reloadPackages();
 
-    // 5.6 首次迁移：现有令牌与规则整理为 main 汇总包（一次性）
-    await this.ensureMainPackage();
 
     // 6. 注册编辑器扩展（传入 matcher）
-    this.editorExtensions = createEditorExtension(this.settings, this.matcher);
+    this.editorExtensions = createEditorExtension(this.settings, this.matcher, this);
     this.registerEditorExtension(this.editorExtensions);
 
     // 7. 注册阅读模式后处理器（传入 matcher）
@@ -277,6 +278,20 @@ export default class PromptColorizer extends Plugin {
   // ============================================================
 
   /**
+   * 应用规则集并刷新渲染链（编译→baseRuleSet 同步→追加包规则→matcher→样式→扩展）。
+   * initRules 调用时 refresh=false（onload 尚未注册扩展）；其余调用 refresh=true。
+   */
+  private applyRuleSetAndRefresh(ruleSet: RuleSet, refresh: boolean = true): void {
+    this.baseRuleSet = ruleSet;
+    this.currentRuleSet = { ...ruleSet, rules: [...ruleSet.rules], styleRules: { ...ruleSet.styleRules } };
+    this.appendCustomRules();
+    this.matcher.setRuleSet(this.currentRuleSet);
+    this.applyDynamicColorVariables(ruleSet.colorTokens);
+    this.applyDynamicStyles(ruleSet.styleRules, ruleSet.colorTokens);
+    if (refresh) this.refreshEditorExtensions();
+  }
+
+  /**
    * 初始化规则引擎
    * 按优先级尝试加载规则：本地缓存 → 内置规则
    * 如果配置了远程模式，异步检查更新
@@ -303,31 +318,29 @@ export default class PromptColorizer extends Plugin {
     }
 
     if (ruleSet) {
-      this.currentRuleSet = ruleSet;
-      this.appendCustomRules();
-      this.matcher.setRuleSet(ruleSet);
-      this.applyDynamicColorVariables(ruleSet.colorTokens);
-      this.applyDynamicStyles(ruleSet.styleRules, ruleSet.colorTokens);
+      this.applyRuleSetAndRefresh(ruleSet, false);
     }
   }
 
   /**
-   * 包管理模块（v5）：合并用户自定义规则到规则集。
-   * .stylepkg 导入的规则存 settings.customRules（id/regex/cssClass/priority/style），
-   * 在原规则集之上追加（不改动 YAML 本体与既有解析逻辑）。
+   * 包管理模块（v5）：从 baseRuleSet 重建 currentRuleSet，追加 settings.customRules。
+   * 包驱动下 customRules 是启用包内嵌规则的聚合缓存（reloadPackages 重建）。
+   * 每次调用从 baseRuleSet.rules 重置，避免包切换后旧规则残留。
    */
   appendCustomRules(): void {
+    if (!this.baseRuleSet || !this.currentRuleSet) return;
     const defs = this.settings.customRules ?? [];
-    if (!this.currentRuleSet || defs.length === 0) return;
+    // 从 baseRuleSet 重置 rules（清除上一轮包自定义规则）
+    this.currentRuleSet.rules = [...this.baseRuleSet.rules];
     for (const def of defs) {
       if (!def?.id || !def.regex || !def.cssClass) continue;
-      // 跳过与既有规则重复的 ID（例如重启后重复追加）
-      if (this.currentRuleSet.rules.some((r) => r.id === def.id)) continue;
+      // 跳过与 baseRuleSet 重复的 ID（YAML 本体优先）
+      if (this.baseRuleSet.rules.some((r) => r.id === def.id)) continue;
       let regex: RegExp;
       try {
         regex = new RegExp(def.regex, def.flags ?? '');
       } catch {
-        continue; // 正则非法的规则跳过，不阻塞
+        continue;
       }
       this.currentRuleSet.rules.push({
         id: def.id,
@@ -338,9 +351,8 @@ export default class PromptColorizer extends Plugin {
         captureGroup: def.captureGroup ?? 0,
       });
       if (def.style) {
-        // 样式合并进 styleRules（后导入覆盖同名键）
         this.currentRuleSet.styleRules[def.cssClass] = {
-          ...(this.currentRuleSet.styleRules[def.cssClass] ?? {}),
+          ...(this.baseRuleSet.styleRules[def.cssClass] ?? {}),
           ...def.style,
         };
       }
@@ -481,7 +493,6 @@ export default class PromptColorizer extends Plugin {
           totalFiles: 5,
           successFiles: 0,
           totalRules: 0,
-          totalTerms: 0,
           duration: Date.now() - startTime,
           error: '无法获取远程版本信息',
         });
@@ -513,7 +524,6 @@ export default class PromptColorizer extends Plugin {
           totalFiles: 5,
           successFiles: 5,
           totalRules: 0,
-          totalTerms: 0,
           duration: Date.now() - startTime,
         });
 
@@ -538,7 +548,6 @@ export default class PromptColorizer extends Plugin {
 
       // 解析分类统计
       const categories = files ? parseRuleCategories(files) : [];
-      const totalTerms = files ? countLexiconTerms(files) : 0;
 
       if (!files) {
         // 部分或全部文件拉取失败
@@ -556,9 +565,7 @@ export default class PromptColorizer extends Plugin {
           categories,
           totalFiles: 5,
           successFiles: successCount,
-          totalRules: 0,
-          totalTerms,
-          duration: Date.now() - startTime,
+          totalRules: 0,duration: Date.now() - startTime,
           error: `${successCount}/5 个文件拉取成功`,
         });
 
@@ -584,15 +591,11 @@ export default class PromptColorizer extends Plugin {
       // 编译并应用新规则
       const ruleSet = compileRuleSet(files, localInfo.version, localInfo.updateTime);
       if (ruleSet) {
-        this.currentRuleSet = ruleSet;
-        this.matcher.setRuleSet(ruleSet);
-        this.applyDynamicColorVariables(ruleSet.colorTokens);
-        this.applyDynamicStyles(ruleSet.styleRules, ruleSet.colorTokens);
-        this.refreshEditorExtensions();
+        this.applyRuleSetAndRefresh(ruleSet);
         this.settings.lastCheckTime = Date.now();
 
         // 统计总规则数
-        const totalRules = ruleSet.rules.length + ruleSet.lexicons.length + ruleSet.contextRules.length;
+        const totalRules = ruleSet.rules.length + ruleSet.contextRules.length;
 
         // 生成成功报告
         await this.savePullReport({
@@ -607,9 +610,7 @@ export default class PromptColorizer extends Plugin {
           categories,
           totalFiles: 5,
           successFiles: 5,
-          totalRules,
-          totalTerms,
-          duration: Date.now() - startTime,
+          totalRules,duration: Date.now() - startTime,
         });
 
         await this.saveSettings();
@@ -632,11 +633,7 @@ export default class PromptColorizer extends Plugin {
                 prevVersion.updateTime
               );
               if (prevRuleSet) {
-                this.currentRuleSet = prevRuleSet;
-                this.matcher.setRuleSet(prevRuleSet);
-                this.applyDynamicColorVariables(prevRuleSet.colorTokens);
-                this.applyDynamicStyles(prevRuleSet.styleRules, prevRuleSet.colorTokens);
-                this.refreshEditorExtensions();
+                this.applyRuleSetAndRefresh(prevRuleSet);
               }
             }
             if (showNotice) {
@@ -666,9 +663,7 @@ export default class PromptColorizer extends Plugin {
           categories,
           totalFiles: 5,
           successFiles: 5,
-          totalRules: 0,
-          totalTerms,
-          duration: Date.now() - startTime,
+          totalRules: 0,duration: Date.now() - startTime,
           error: '规则编译失败',
         });
       }
@@ -689,7 +684,6 @@ export default class PromptColorizer extends Plugin {
         totalFiles: 5,
         successFiles: 0,
         totalRules: 0,
-        totalTerms: 0,
         duration: Date.now() - startTime,
         error: e instanceof Error ? e.message : String(e),
       });
@@ -741,11 +735,7 @@ export default class PromptColorizer extends Plugin {
     // 回退到内置规则
     const ruleSet = loadBuiltinRules();
     if (ruleSet) {
-      this.currentRuleSet = ruleSet;
-      this.matcher.setRuleSet(ruleSet);
-      this.applyDynamicColorVariables(ruleSet.colorTokens);
-      this.applyDynamicStyles(ruleSet.styleRules, ruleSet.colorTokens);
-      this.refreshEditorExtensions();
+      this.applyRuleSetAndRefresh(ruleSet);
     }
   }
 
@@ -1002,7 +992,71 @@ export default class PromptColorizer extends Plugin {
   // ============================================================
 
   /**
+   * 包驱动：令牌编辑后同步写回当前唯一启用包（多包/无包时令牌保留在全局 settings，不写包）。
+   * settings.customTextColors 是派生缓存，需写回包目录才能持久化（否则 reloadPackages 覆盖）。
+   * 无包/多包场景：令牌本就属于全局（不属于任何包），保留在 settings 即可持久化。
+   */
+  private async syncTokensToActivePackage(): Promise<void> {
+    if (!this.pkgManager) return;
+    const enabled = this.pkgManager.getEnabledPackages(this.loadedPackages);
+    if (enabled.length === 1) {
+      const pkg = enabled[0];
+      if (!pkg.manifest) return;
+      await this.pkgManager.writePackage(
+        pkg.dirName,
+        pkg.manifest,
+        this.settings.customTextColors,
+        pkg.embeddedRules ?? []
+      );
+    }
+    await this.saveSettings();
+    await this.reloadPackages();
+  }
+
+  /**
+   * 一次性迁移：旧全局 customTextColors/customRules → 迁移包 __migrated__。
+   * 包驱动后规则只从启用包读取，旧全局规则若不迁移会在 reloadPackages 时被清空。
+   * 迁移包自动启用，用户旧资源立即生效。
+   * 令牌本就属于全局，迁移失败时保留在 settings 不丢失（下次启动重试）。
+   */
+  private async migrateLegacyGlobalResources(): Promise<void> {
+    if (this.settings.legacyResourcesMigrated) return;
+    const tokens = this.settings.customTextColors ?? [];
+    const rules = this.settings.customRules ?? [];
+    if (tokens.length === 0 && rules.length === 0) {
+      this.settings.legacyResourcesMigrated = true;
+      await this.saveSettings();
+      return;
+    }
+    try {
+      const manifest: PackageManifest = {
+        packageId: '__migrated__',
+        name: '旧数据迁移包',
+        tagColor: '#44AAFF',
+        description: `升级时自动迁移的旧令牌（${tokens.length}）与规则（${rules.length}）`,
+        version: '1.0.0',
+        specVersion: PACKAGE_SPEC_VERSION,
+        type: 'user',
+        usageTag: '旧数据迁移',
+        previewSampleText: '',
+
+        ruleOverrides: {},
+      };
+      await this.pkgManager.createPackage(manifest, tokens, rules);
+      this.settings.enabledPackageIds = ['__migrated__'];
+      this.settings.legacyResourcesMigrated = true;
+      await this.saveSettings();
+      new Notice('已将旧令牌/规则迁移到「旧数据迁移包」并自动启用');
+    } catch (e) {
+      // 迁移失败不阻塞启动，但不置标志 → 下次启动重试；令牌保留在全局 settings 不丢失
+      console.error('[PromptColorizer] 旧数据迁移失败，下次启动将重试:', e);
+      new Notice('旧数据迁移失败，将在下次启动重试（数据未丢失）', 5000);
+    }
+  }
+
+  /**
    * 重新扫描加载全部包（内置 + 用户目录）并应用启用包样式覆盖层。
+   * 包驱动：加载后重建全局令牌/规则缓存为启用包内嵌资源的聚合（没包→空→零高亮）。
    * 供启动、导图操作（导入/删除/克隆/勾选变化）后调用。
    */
   async reloadPackages(): Promise<void> {
@@ -1012,62 +1066,120 @@ export default class PromptColorizer extends Plugin {
     } catch {
       this.loadedPackages = [];
     }
+    // 重建派生缓存：settings.customTextColors/customRules = 启用包聚合
+    this.rebuildCacheFromEnabledPackages();
+    this.applyCustomTextColorsStyles();
+    this.refreshEditorExtensions();
     this.applyPackageScopes();
     this.applyPackageOverrideStyles();
   }
 
   /**
-   * 同步包作用域到规则匹配器（v5 启用机制）：
-   * 启用任一包 → 仅包内引用的规则/令牌参与着色（∩ 全局开关）；
-   * 未启用任何包 → 作用域置空，回退全局开关（全部规则/令牌按原逻辑参与）。
+   * 重建全局规则缓存为启用包内嵌资源的聚合（派生缓存，包目录是规则唯一真相源）。
+   * 令牌（customTextColors）属于全局资源，不随包启停清空——保留全局游离令牌，
+   * 合并启用包内嵌令牌（ID 去重，包内优先）。
+   * 规则（customRules）包驱动：没启用包 → 置空 → 零规则高亮。
+   */
+  private rebuildCacheFromEnabledPackages(): void {
+    const enabled = this.pkgManager?.getEnabledPackages(this.loadedPackages) ?? [];
+    const rules: CustomRuleDef[] = [];
+    const seenRuleIds = new Set<string>();
+    for (const pkg of enabled) {
+      for (const r of pkg.embeddedRules ?? []) {
+        if (r?.id && !seenRuleIds.has(r.id)) {
+          rules.push(structuredClone(r));
+          seenRuleIds.add(r.id);
+        }
+      }
+    }
+    // 令牌：包内嵌令牌（去重）∪ 全局游离令牌（不在任何启用包内的）
+    const packageTokenIds = new Set<string>();
+    const packageTokens: CustomTextColor[] = [];
+    const seenTokenIds = new Set<string>();
+    for (const pkg of enabled) {
+      for (const t of pkg.embeddedTokens ?? []) {
+        if (t?.id && !seenTokenIds.has(t.id)) {
+          packageTokens.push(structuredClone(t));
+          seenTokenIds.add(t.id);
+          packageTokenIds.add(t.id);
+        }
+      }
+    }
+    const globalTokens = (this.settings.customTextColors ?? []).filter(
+      (t) => t?.id && !packageTokenIds.has(t.id)
+    );
+    this.settings.customTextColors = [...packageTokens, ...globalTokens];
+    this.settings.customRules = rules;
+    // 重建 customRules 后重新编译进 currentRuleSet
+    this.appendCustomRules();
+    if (this.matcher && this.currentRuleSet) {
+      this.matcher.setRuleSet(this.currentRuleSet);
+    }
+  }
+
+  /**
+   * 同步包作用域到规则匹配器：
+   * 内置 YAML 规则始终作为底座生效（插件本体功能）；
+   * 包规则为用户自定义增补层，按启用包过滤。
+   * 未启用任何包 → null 作用域 → 回退全局开关（内置规则 + 全局令牌全生效）。
+   * 启用包 → 作用域 = 内置规则 ID ∪ 包规则 ID（内置始终生效，包规则按启用过滤）。
    * matcher 为编辑器/阅读/导图三链路共用实例，作用域自动全局生效。
    */
   applyPackageScopes(): void {
     if (!this.matcher || !this.pkgManager) return;
     const enabled = this.pkgManager.getEnabledPackages(this.loadedPackages);
     if (enabled.length === 0) {
+      // 没启用包 → null → 回退全局开关（内置规则 + 全局令牌全生效）
       this.matcher.setRuleIdScope(null);
       this.matcher.setTokenIdScope(null);
       return;
     }
     const { tokenIds, ruleIds } = this.pkgManager.collectEnabledRefIds(enabled);
+    // 内置规则始终在白名单内（底座），包规则按启用过滤
+    const baseRuleIds = new Set((this.baseRuleSet?.rules ?? []).map((r) => r.id));
+    for (const id of baseRuleIds) ruleIds.add(id);
+    // 全局令牌始终在白名单内（令牌不属于任何包）
+    const globalTokenIds = new Set((this.settings.customTextColors ?? []).map((c) => c.id));
+    for (const id of globalTokenIds) tokenIds.add(id);
     this.matcher.setRuleIdScope(ruleIds);
     this.matcher.setTokenIdScope(tokenIds);
   }
 
-  /**
-   * 首次迁移（v5）：将现有全部令牌与规则整理为 main 汇总包。
-   * 仅在未迁移过时执行一次（settings.mainPackageMigrated 标记），失败不阻塞启动。
-   */
-  private async ensureMainPackage(): Promise<void> {
-    if (this.settings.mainPackageMigrated) return;
-    // 双保险：settings 标记可能因 data.json 重置/换测试 vault 丢失，但 vault 的 packages/ 目录仍在。
-    // 已存在 main 汇总包则视为已迁移，避免重复创建 main_2/main_3。
-    const hasMainPkg = this.loadedPackages.some(
-      (p) => !p.isBuiltin && (p.dirName === 'main' || p.manifest?.usageTag === '汇总整理')
-    );
-    this.settings.mainPackageMigrated = true;
-    await this.saveSettings();
-    if (hasMainPkg) return;
-    try {
-      const hasTokens = (this.settings.customTextColors?.length ?? 0) > 0;
-      const hasRules = (this.currentRuleSet?.rules?.length ?? 0) > 0;
-      if (!hasTokens && !hasRules) return;
-      const { consolidateAllResourcesIntoMainPackage } = await import('./src/packages/package-actions');
-      await consolidateAllResourcesIntoMainPackage(this);
-    } catch {
-      // 整理失败不阻塞启动
-    }
-  }
 
-  /** 获取规则 ID → CSS 类名映射（从容则集推导，供覆盖层容错过滤） */
+  /** 获取规则 ID → CSS 类名映射（内置规则集 + 全部包内嵌规则并集，供包详情引用区与覆盖层容错过滤） */
   getRuleIdToCssClassMap(): Record<string, string> {
     const map: Record<string, string> = {};
     const rules = this.currentRuleSet?.rules ?? [];
     for (const r of rules) {
       if (r?.id && r?.cssClass) map[r.id] = r.cssClass;
     }
+    // 包独有规则（未启用包内嵌本体也可见可勾选）
+    for (const pkg of this.loadedPackages ?? []) {
+      for (const r of pkg.embeddedRules ?? []) {
+        if (r?.id && r?.cssClass && !(r.id in map)) {
+          map[r.id] = r.cssClass;
+        }
+      }
+    }
     return map;
+  }
+
+  /**
+   * 获取规则显示名（优先级：包内嵌规则 name → 内置映射）。
+   * 中文名定义在包数据（rules/*.json 的 name 字段），插件加载时自动解析；
+   * 未定义时回退 rule-id-names 注册表，仍无则显示原始 ID。
+   */
+  getRuleDisplayName(ruleId: string): string {
+    // 1. 包数据优先（name 为用户可编辑的中文名）
+    for (const pkg of this.loadedPackages ?? []) {
+      for (const r of pkg.embeddedRules ?? []) {
+        if (r?.id === ruleId && r.name && r.name !== r.id) {
+          return r.name;
+        }
+      }
+    }
+    // 2. 内置注册表回退
+    return getBuiltinRuleDisplayName(ruleId);
   }
 
   /**
@@ -1181,14 +1293,13 @@ export default class PromptColorizer extends Plugin {
           this.settings.customTextColors.push(newItem);
         }
 
-        // 启用功能（首次添加时自动启用）
-        this.settings.customTextColorsEnabled = true;
 
         // 保存并刷新
         this.saveSettings().then(() => {
           this.applyCustomTextColorsStyles();
           this.refreshEditorExtensions();
           new Notice(t('customText.noticeApplied'));
+          void this.syncTokensToActivePackage();
         });
       }
     );
@@ -1220,11 +1331,12 @@ export default class PromptColorizer extends Plugin {
       (c) => !idsToRemove.includes(c.id)
     );
 
-    this.saveSettings().then(() => {
-      this.applyCustomTextColorsStyles();
-      this.refreshEditorExtensions();
-      new Notice(t('customText.noticeRemoved'));
-    });
+        this.saveSettings().then(() => {
+          this.applyCustomTextColorsStyles();
+          this.refreshEditorExtensions();
+          new Notice(t('customText.noticeApplied'));
+          void this.syncTokensToActivePackage();
+        });
   }
 
   /**
@@ -1238,6 +1350,7 @@ export default class PromptColorizer extends Plugin {
     await this.saveSettings();
     this.applyCustomTextColorsStyles();
     this.refreshEditorExtensions();
+    void this.syncTokensToActivePackage();
   }
 
   /**
@@ -1254,6 +1367,7 @@ export default class PromptColorizer extends Plugin {
     await this.saveSettings();
     this.applyCustomTextColorsStyles();
     this.refreshEditorExtensions();
+    void this.syncTokensToActivePackage();
   }
 
   /**
@@ -1278,6 +1392,7 @@ export default class PromptColorizer extends Plugin {
         item.effect = result.effect;
         item.effects = [...result.effects];
         item.effectParams = result.effectParams ?? {};
+        item.category = result.category;
 
         this.saveSettings().then(() => {
           this.applyCustomTextColorsStyles();
@@ -1326,8 +1441,7 @@ export default class PromptColorizer extends Plugin {
       this.popoverTimerId = null;
     }
 
-    // 全局开关关闭时，不弹出
-    if (!this.settings.customTextColorsEnabled) return;
+
     // 自动弹出开关关闭时，不弹出
     if (!this.settings.customTextPopoverAutoShow) return;
 
@@ -1410,8 +1524,6 @@ export default class PromptColorizer extends Plugin {
       this.settings.customTextColors.push(newItem);
     }
 
-    // 启用功能
-    this.settings.customTextColorsEnabled = true;
 
     await this.saveSettings();
     this.applyCustomTextColorsStyles();
@@ -1484,6 +1596,32 @@ export default class PromptColorizer extends Plugin {
     // 色盲辅助 class（项 7）：CSS 据此为红/绿系令牌追加冗余下划线
     document.body.classList.toggle('pc-colorblind-assist', !!this.settings.colorBlindAssist);
     this.applyColorBlindAssistStyles();
+
+    // 嵌入卡片装饰风格：body data 属性驱动三档 CSS（tech/vision/polaroid）
+    const embedStyle = this.settings.embedCardStyle ?? 'tech';
+    if (document.body.getAttribute('data-embed-style') !== embedStyle) {
+      document.body.setAttribute('data-embed-style', embedStyle);
+    }
+
+    // 可视化分块（阅读模式块化样式）：body 类开关 + CSS 变量驱动 styles.css 覆盖
+    const tblOn = !!this.settings.readerTableBlockEnabled;
+    document.body.classList.toggle('pc-table-block', tblOn);
+    document.body.classList.toggle('pc-table-rounded', tblOn && !!this.settings.readerTableRounded);
+    document.body.classList.toggle('pc-table-header-bg', tblOn && !!this.settings.readerTableHeaderBg);
+    document.body.classList.toggle('pc-table-sticky-header', tblOn && !!this.settings.readerTableStickyHeader);
+    document.body.classList.toggle('pc-table-first-col', tblOn && !!this.settings.readerTableFirstCol);
+    document.body.classList.toggle('pc-table-zebra', tblOn && !!this.settings.readerTableZebra);
+    document.body.classList.toggle('pc-table-hover', tblOn && !!this.settings.readerTableHover);
+    document.body.setAttribute('data-table-density', tblOn ? (this.settings.readerTableDensity ?? 'normal') : 'normal');
+    // 强度变量：斑马纹 / 悬停（写入 body 级变量，styles.css 消费）
+    document.body.style.setProperty('--pc-table-zebra-alpha', String(this.settings.readerTableZebraAlpha ?? 4));
+    document.body.style.setProperty('--pc-table-hover-alpha', String(this.settings.readerTableHoverAlpha ?? 8));
+
+    const mdOn = !!this.settings.readerMetadataBlockEnabled;
+    document.body.classList.toggle('pc-metadata-block', mdOn);
+    document.body.classList.toggle('pc-metadata-key-bold', mdOn && !!this.settings.readerMetadataKeyBold);
+    document.body.classList.toggle('pc-metadata-row-hover', mdOn && !!this.settings.readerMetadataRowHover);
+    document.body.setAttribute('data-metadata-density', mdOn ? (this.settings.readerMetadataDensity ?? 'normal') : 'normal');
   }
 
   /** 色盲辅助样式元素 */
@@ -1571,7 +1709,7 @@ export default class PromptColorizer extends Plugin {
    * 传入当前 matcher 实例，确保规则更新后编辑器使用新规则
    */
   refreshEditorExtensions(): void {
-    const newExts = createEditorExtension(this.settings, this.matcher);
+    const newExts = createEditorExtension(this.settings, this.matcher, this);
     this.editorExtensions.length = 0;
     this.editorExtensions.push(...newExts);
     this.app.workspace.updateOptions();
@@ -1584,116 +1722,7 @@ export default class PromptColorizer extends Plugin {
     const styleRules = this.matcher.getStyleRules();
     const colorTokens = this.matcher.getColorTokens();
     this.applyDynamicStyles(styleRules, colorTokens);
-    this.applyVocabColorStyles();
   }
-
-  /**
-   * 获取词汇令牌列表（颜色管理 Tab 渲染用）
-   * 每个令牌 = 语义领域词汇分组，含名称/描述/颜色/启用状态/词汇量
-   */
-  getVocabTokens(): VocabTokenInfo[] {
-    const customWords = this.settings.vocabCustomWords ?? {};
-    return VOCAB_TOKEN_GROUPS.map((group) => {
-      const name = t(group.nameKey);
-      const desc = t(group.descKey);
-      // 默认色取该组第一个 cssClass 的 styleRule 解析色
-      const defaultColor = this.matcher.getColorByCssClass(group.cssClasses[0]);
-      const customColor = this.settings.vocabColors?.[group.id] ?? '';
-      const enabled = this.settings.vocabTokenEnabled?.[group.id] ?? true;
-      const builtinCount = getVocabWords(this.currentRuleSet, group.id).length;
-      const customCount = customWords[group.id]?.length ?? 0;
-      return {
-        id: group.id,
-        name,
-        desc,
-        categoryId: TOKEN_TO_CATEGORY[group.id] ?? '',
-        cssClasses: group.cssClasses,
-        color: customColor || defaultColor || 'var(--text-muted)',
-        defaultColor,
-        enabled,
-        wordCount: builtinCount + customCount,
-        builtinCount,
-        customCount,
-      };
-    });
-  }
-
-  /**
-   * 获取词汇大类列表（颜色管理 Tab 渲染用）
-   */
-  getVocabCategories(): VocabCategoryInfo[] {
-    return VOCAB_CATEGORIES.map((cat) => ({
-      id: cat.id,
-      name: t(cat.nameKey),
-      desc: t(cat.descKey),
-      tokenIds: cat.groups,
-    }));
-  }
-
-  /**
-   * 获取指定令牌组的完整词汇列表（内置 + 自定义，供词汇预览）
-   */
-  getVocabWords(tokenId: string): { builtin: string[]; custom: string[] } {
-    const builtin = getVocabWords(this.currentRuleSet, tokenId);
-    const custom = [...(this.settings.vocabCustomWords?.[tokenId] ?? [])];
-    return { builtin, custom };
-  }
-
-  /**
-   * 统计当前活动文档中各词汇令牌的命中次数
-   * 用于颜色管理 Tab 的命中统计显示
-   */
-  getVocabHitCounts(): Record<string, number> {
-    const counts: Record<string, number> = {};
-    for (const g of VOCAB_TOKEN_GROUPS) counts[g.id] = 0;
-
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!view) return counts;
-
-    const text = view.editor.getValue();
-    if (!text) return counts;
-
-    const enabledIds = this.settings.enabledRuleIds && this.settings.enabledRuleIds.length > 0
-      ? new Set(this.settings.enabledRuleIds)
-      : null;
-    const matches = this.getAllMatches(text).length ? this.getAllMatches(text) : this.matcher.match(text, enabledIds);
-    for (const m of matches) {
-      const tokenId = VOCAB_CLASS_TO_TOKEN[m.cssClass];
-      if (tokenId) counts[tokenId] = (counts[tokenId] ?? 0) + 1;
-    }
-    return counts;
-  }
-
-  /**
-   * 注入词汇令牌自定义颜色覆盖样式
-   * 用户为词汇令牌选色后覆盖对应 cssClass 的默认颜色
-   */
-  applyVocabColorStyles(): void {
-    if (this.vocabColorStyleEl) {
-      this.vocabColorStyleEl.remove();
-      this.vocabColorStyleEl = null;
-    }
-    const colors = this.settings.vocabColors ?? {};
-    const entries = Object.entries(colors).filter(([id]) => id);
-    if (entries.length === 0) return;
-
-    let css = '';
-    for (const group of VOCAB_TOKEN_GROUPS) {
-      // 禁用的令牌不生成颜色覆盖（匹配已被开关过滤）
-      if (this.settings.vocabTokenEnabled?.[group.id] === false) continue;
-      const hex = colors[group.id];
-      if (!hex) continue;
-      const selectors = group.cssClasses.map((c) => `.${c}`).join(', ');
-      css += `${selectors} { color: ${hex} !important; }\n`;
-    }
-    if (!css) return;
-
-    this.vocabColorStyleEl = document.createElement('style');
-    this.vocabColorStyleEl.id = 'prompt-colorizer-vocab-colors';
-    this.vocabColorStyleEl.textContent = css;
-    document.head.appendChild(this.vocabColorStyleEl);
-  }
-
 
   /** 文件浏览器着色的多轮兜底延迟（毫秒），覆盖异步渲染慢场景 */
   private static readonly FILE_COLORIZE_DELAYS: number[] = [0, 100, 300, 800, 2000];
@@ -1797,10 +1826,7 @@ export default class PromptColorizer extends Plugin {
    * @returns 安全的 HTML 字符串(已转义文本节点)
    */
   highlightTextToHtml(text: string): string {
-    const enabledIds = this.settings.enabledRuleIds && this.settings.enabledRuleIds.length > 0
-      ? new Set(this.settings.enabledRuleIds)
-      : null;
-    const results = this.matcher.match(text, enabledIds).filter((r) => !r.block);
+    const results = this.matcher.match(text, null).filter((r) => !r.block);
 
     const escapeHtml = (s: string): string =>
       s

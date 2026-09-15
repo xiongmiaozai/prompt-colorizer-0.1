@@ -1,0 +1,16 @@
+[
+  {
+    "id": "md_list_item",
+    "name": "列表项",
+    "regex": "",
+    "cssClass": "dsl-md-list-item",
+    "priority": 30
+  },
+  {
+    "id": "md_task_list",
+    "name": "任务列表",
+    "regex": "",
+    "cssClass": "dsl-md-task-list",
+    "priority": 30
+  }
+]

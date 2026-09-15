@@ -1,0 +1,37 @@
+[
+  {
+    "id": "md_blockquote",
+    "name": "引用块",
+    "regex": "",
+    "cssClass": "dsl-md-blockquote",
+    "priority": 30
+  },
+  {
+    "id": "md_nested_quote",
+    "name": "嵌套引用",
+    "regex": "",
+    "cssClass": "dsl-md-nested-quote",
+    "priority": 30
+  },
+  {
+    "id": "md_callout",
+    "name": "标注框",
+    "regex": "",
+    "cssClass": "dsl-md-callout",
+    "priority": 30
+  },
+  {
+    "id": "md_callout_meta",
+    "name": "标注元数据",
+    "regex": "",
+    "cssClass": "dsl-md-callout-meta",
+    "priority": 30
+  },
+  {
+    "id": "md_admonition",
+    "name": "警示块",
+    "regex": "",
+    "cssClass": "dsl-md-admonition",
+    "priority": 30
+  }
+]

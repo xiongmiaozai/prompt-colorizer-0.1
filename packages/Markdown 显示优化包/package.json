@@ -1,0 +1,13 @@
+{
+  "packageId": "mdplus",
+  "name": "✨ Markdown 显示优化包",
+  "tagColor": "#a78bfa",
+  "description": "引用全部 Markdown 语法规则（含 Obsidian 扩展），让普通 md 文件的结构元素获得更清晰的视觉层次",
+  "version": "1.1.0",
+  "specVersion": "1.0",
+  "type": "user",
+  "usageTag": "通用显示优化",
+  "previewSampleText": "---\ntitle: 笔记标题\ntags: [前端, React]\n---\n\n# 一级标题\n\n## 二级标题\n\n**粗体** *斜体* ~~删除~~ ==高亮== `代码`\n\nH~2~O 与 E=mc^2^ 以及 <kbd>Ctrl</kbd>\n\n[[双链]] [链接](url) ![图片](img.png) #标签\n\n> [!tip] 提示\n> 这是一个 Callout\n\n- [x] 已完成\n- [ ] 待办\n\n| 列A | 列B |\n|-----|-----|\n| 1   | 2   |\n\n$$E=mc^2$$\n\n%%注释%% :smile:",
+
+  "ruleOverrides": {}
+}

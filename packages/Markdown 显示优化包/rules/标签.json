@@ -1,0 +1,16 @@
+[
+  {
+    "id": "md_tag",
+    "name": "标签",
+    "regex": "",
+    "cssClass": "dsl-md-tag",
+    "priority": 30
+  },
+  {
+    "id": "md_emoji_shortcode",
+    "name": "表情代码",
+    "regex": "",
+    "cssClass": "dsl-md-emoji-shortcode",
+    "priority": 30
+  }
+]

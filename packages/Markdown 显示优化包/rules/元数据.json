@@ -1,0 +1,9 @@
+[
+  {
+    "id": "md_yaml_key",
+    "name": "YAML 属性键",
+    "regex": "",
+    "cssClass": "dsl-md-yaml-key",
+    "priority": 30
+  }
+]

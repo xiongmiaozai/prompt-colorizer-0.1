@@ -1,0 +1,30 @@
+[
+  {
+    "id": "md_link",
+    "name": "外部链接",
+    "regex": "",
+    "cssClass": "dsl-md-link",
+    "priority": 30
+  },
+  {
+    "id": "md_image",
+    "name": "图片引用",
+    "regex": "",
+    "cssClass": "dsl-md-image",
+    "priority": 30
+  },
+  {
+    "id": "md_wiki_link",
+    "name": "双链",
+    "regex": "",
+    "cssClass": "dsl-md-wiki-link",
+    "priority": 30
+  },
+  {
+    "id": "md_anchor_link",
+    "name": "锚点链接",
+    "regex": "",
+    "cssClass": "dsl-md-anchor-link",
+    "priority": 30
+  }
+]

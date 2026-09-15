@@ -1,0 +1,16 @@
+[
+  {
+    "id": "md_footnote_ref",
+    "name": "脚注引用",
+    "regex": "",
+    "cssClass": "dsl-md-footnote-ref",
+    "priority": 30
+  },
+  {
+    "id": "md_footnote_def",
+    "name": "脚注定义",
+    "regex": "",
+    "cssClass": "dsl-md-footnote-def",
+    "priority": 30
+  }
+]

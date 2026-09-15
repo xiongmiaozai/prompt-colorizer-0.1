@@ -1,0 +1,16 @@
+[
+  {
+    "id": "md_table_sep",
+    "name": "表格分隔行",
+    "regex": "",
+    "cssClass": "dsl-md-table-sep",
+    "priority": 30
+  },
+  {
+    "id": "md_table_row",
+    "name": "表格行",
+    "regex": "",
+    "cssClass": "dsl-md-table-row",
+    "priority": 30
+  }
+]

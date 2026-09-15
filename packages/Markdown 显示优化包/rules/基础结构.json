@@ -1,0 +1,74 @@
+[
+  {
+    "id": "md_frontmatter",
+    "name": "元数据起始线",
+    "regex": "",
+    "cssClass": "dsl-md-frontmatter",
+    "priority": 30
+  },
+  {
+    "id": "md_heading",
+    "name": "标题",
+    "regex": "",
+    "cssClass": "dsl-md-heading",
+    "priority": 30
+  },
+  {
+    "id": "md_bold",
+    "name": "粗体",
+    "regex": "",
+    "cssClass": "dsl-md-bold",
+    "priority": 30
+  },
+  {
+    "id": "md_italic",
+    "name": "斜体",
+    "regex": "",
+    "cssClass": "dsl-md-italic",
+    "priority": 30
+  },
+  {
+    "id": "md_strikethrough",
+    "name": "删除线",
+    "regex": "",
+    "cssClass": "dsl-md-strikethrough",
+    "priority": 30
+  },
+  {
+    "id": "md_highlight",
+    "name": "高亮",
+    "regex": "",
+    "cssClass": "dsl-md-highlight",
+    "priority": 30
+  },
+  {
+    "id": "md_subscript",
+    "name": "下标",
+    "regex": "",
+    "cssClass": "dsl-md-subscript",
+    "priority": 30
+  },
+  {
+    "id": "md_superscript",
+    "name": "上标",
+    "regex": "",
+    "cssClass": "dsl-md-superscript",
+    "priority": 30
+  },
+  {
+    "id": "sym_chatml",
+    "name": "ChatML 角色标记",
+    "regex": "<\\|im_\\w+\\|>",
+    "flags": "g",
+    "cssClass": "dsl-sym-chatml",
+    "priority": 60
+  },
+  {
+    "id": "sym_think",
+    "name": "思维链标记",
+    "regex": "</?(?:think|thought|reasoning)>",
+    "flags": "gi",
+    "cssClass": "dsl-sym-think",
+    "priority": 58
+  }
+]
